@@ -276,11 +276,10 @@ class HomeService(models.Model):
 # ============================================
 # ServiceChat - مدیریت چت با JSON
 # ============================================
+# home_module/models.py
+
 class ServiceChat:
-    """
-    کلاس مدیریت چت برای هر خدمت
-    ذخیره‌سازی در فایل JSON مستقل از دیتابیس
-    """
+    """کلاس مدیریت چت برای هر خدمت"""
 
     CHAT_DIR = 'media/chats'
     _locks = {}
@@ -293,23 +292,19 @@ class ServiceChat:
 
     @classmethod
     def _ensure_dir(cls):
-        """اطمینان از وجود پوشه چت"""
         os.makedirs(cls.CHAT_DIR, exist_ok=True)
 
     @classmethod
     def _get_lock(cls, service_id):
-        """قفل برای جلوگیری از نوشتن همزمان (Thread Safety)"""
         key = str(service_id)
         if key not in cls._locks:
             cls._locks[key] = Lock()
         return cls._locks[key]
 
     def exists(self) -> bool:
-        """بررسی وجود فایل چت"""
         return os.path.exists(self.file_path)
 
     def create(self) -> dict:
-        """ایجاد فایل چت جدید"""
         if self.exists():
             return self.read()
 
@@ -351,7 +346,6 @@ class ServiceChat:
         return chat_data
 
     def read(self) -> dict:
-        """خواندن فایل چت"""
         if not self.exists():
             return self.create()
 
@@ -362,7 +356,6 @@ class ServiceChat:
             return self.create()
 
     def _write(self, data: dict):
-        """نوشتن در فایل"""
         data['updated_at'] = datetime.now().isoformat()
         with open(self.file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -370,19 +363,6 @@ class ServiceChat:
     def add_message(self, sender_id: str, sender_name: str,
                     sender_type: str, content: str,
                     file_info: dict = None) -> dict:
-        """
-        اضافه کردن پیام جدید
-
-        Parameters:
-            sender_id: شناسه فرستنده
-            sender_name: نام فرستنده
-            sender_type: 'customer' یا 'operator'
-            content: متن پیام
-            file_info: اطلاعات فایل (اختیاری)
-
-        Returns:
-            dict: پیام ایجاد شده
-        """
         lock = self._get_lock(self.service_id)
 
         with lock:
@@ -400,12 +380,11 @@ class ServiceChat:
                 "edited": False
             }
 
-            data['messages'].append(message)
+            data['messages'].append(message)  # اضافه به آخر
             data['metadata']['total_messages'] += 1
             data['metadata']['last_message_at'] = message['timestamp']
             data['metadata']['last_message_by'] = sender_id
 
-            # آپدیت شمارنده پیام‌های خوانده نشده
             if sender_type == 'customer':
                 data['metadata']['unread_operator'] += 1
             else:
@@ -418,29 +397,24 @@ class ServiceChat:
                      user_type: str = None) -> dict:
         """
         دریافت پیام‌ها با pagination
-
-        Parameters:
-            page: شماره صفحه
-            page_size: تعداد پیام در هر صفحه
-            user_type: 'customer' یا 'operator' برای علامت‌گذاری خوانده شده
-
-        Returns:
-            dict: شامل messages, has_more, total, unread_count
+        ترتیب: قدیمی‌ترین اول، جدیدترین آخر
+        صفحه ۱ = جدیدترین پیام‌ها
         """
         data = self.read()
         all_messages = data['messages']
         total = len(all_messages)
 
-        # علامت‌گذاری به عنوان خوانده شده
         if user_type:
             self._mark_as_read(data, user_type)
 
-        # Pagination - از آخر به اول (جدیدترین اول)
+        # محاسبه شروع و پایان برای pagination
+        # صفحه ۱: آخرین page_size پیام
+        # صفحه ۲: page_size پیام قبل از آن
         start = max(0, total - (page * page_size))
         end = total - ((page - 1) * page_size)
 
         messages = all_messages[start:end]
-        messages.reverse()  # جدیدترین اول
+        # بدون reverse - پیام‌ها به ترتیب زمانی طبیعی نمایش داده میشن
 
         return {
             "messages": messages,
@@ -452,7 +426,6 @@ class ServiceChat:
         }
 
     def _mark_as_read(self, data: dict, user_type: str):
-        """علامت‌گذاری پیام‌ها به عنوان خوانده شده و ذخیره"""
         for msg in data['messages']:
             if not msg['is_read'] and msg['sender_type'] != user_type:
                 msg['is_read'] = True
@@ -461,38 +434,21 @@ class ServiceChat:
         self._write(data)
 
     def mark_as_read(self, user_type: str) -> bool:
-        """علامت‌گذاری همه پیام‌ها به عنوان خوانده شده"""
         data = self.read()
         self._mark_as_read(data, user_type)
         return True
 
     def get_unread_count(self, user_type: str) -> int:
-        """دریافت تعداد پیام‌های خوانده نشده"""
         data = self.read()
         return data['metadata'].get(f'unread_{user_type}', 0)
 
     def get_last_message(self) -> dict:
-        """دریافت آخرین پیام"""
         data = self.read()
         if data['messages']:
-            return data['messages'][-1]
+            return data['messages'][-1]  # آخرین عنصر = جدیدترین
         return None
 
-    def get_last_messages_preview(self, count: int = 1) -> list:
-        """دریافت آخرین پیام‌ها برای پیش‌نمایش"""
-        data = self.read()
-        messages = data['messages'][-count:]
-        messages.reverse()
-        return messages
-
-    def add_file(self, uploaded_by: str, file_info: dict) -> dict:
-        """
-        ثبت فایل آپلود شده در چت
-
-        Parameters:
-            uploaded_by: 'customer' یا 'operator'
-            file_info: {'name': '...', 'url': '...', 'size': ...}
-        """
+    def add_file(self, uploaded_by: str, file_info: dict):
         data = self.read()
 
         file_record = {
@@ -508,19 +464,12 @@ class ServiceChat:
         self._write(data)
         return file_record
 
-    def get_files(self) -> list:
-        """دریافت لیست فایل‌های آپلود شده"""
-        data = self.read()
-        return data.get('files', [])
-
     def update_status(self, status: str):
-        """آپدیت وضعیت خدمت در فایل چت"""
         data = self.read()
         data['status'] = status
         self._write(data)
 
     def update_operator(self, operator):
-        """آپدیت اطلاعات اپراتور در چت"""
         data = self.read()
         data['participants']['operator'] = {
             "id": str(operator.id),
@@ -528,43 +477,6 @@ class ServiceChat:
             "phone": operator.phone
         }
         self._write(data)
-
-    def delete_message(self, message_id: int) -> bool:
-        """حذف منطقی پیام"""
-        lock = self._get_lock(self.service_id)
-
-        with lock:
-            data = self.read()
-
-            for msg in data['messages']:
-                if msg['id'] == message_id:
-                    msg['deleted'] = True
-                    msg['content'] = '⛔ این پیام حذف شده است'
-                    msg['edited'] = True
-                    self._write(data)
-                    return True
-
-            return False
-
-    def get_statistics(self) -> dict:
-        """دریافت آمار چت"""
-        data = self.read()
-        messages = data['messages']
-
-        customer_msgs = sum(1 for m in messages if m['sender_type'] == 'customer')
-        operator_msgs = sum(1 for m in messages if m['sender_type'] == 'operator')
-
-        return {
-            "total_messages": len(messages),
-            "customer_messages": customer_msgs,
-            "operator_messages": operator_msgs,
-            "total_files": len(data.get('files', [])),
-            "first_message": messages[0]['timestamp'] if messages else None,
-            "last_message": messages[-1]['timestamp'] if messages else None,
-            "is_active": data['metadata']['is_active']
-        }
-
-
 # ============================================
 # Transaction Model
 # ============================================

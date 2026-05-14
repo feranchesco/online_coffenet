@@ -16,7 +16,7 @@ from django.views.generic import CreateView, FormView
 
 from .forms import OperatorSignupForm, OperatorLoginForm, CustomerSignupForm, CustomerLoginForm
 from .models import Customer
-from home_module.models import Service, Operator
+from home_module.models import Service, Operator, Transaction
 
 
 # ============================================
@@ -259,7 +259,7 @@ def operator_upload_file(request, service_id):
 
 @require_POST
 def operator_complete_service(request, service_id):
-    """تکمیل کار"""
+    """تکمیل کار - با محاسبه کمیسیون و آپدیت کیف پول"""
     operator = get_operator(request)
     if not operator:
         return JsonResponse({'success': False, 'error': 'لطفاً وارد شوید'}, status=401)
@@ -269,15 +269,40 @@ def operator_complete_service(request, service_id):
     if not service.result_file:
         return JsonResponse({'success': False, 'error': 'ابتدا فایل را آپلود کنید'}, status=400)
 
+    # محاسبه مالی
+    final_price = service.final_price or service.price
+    commission = int(final_price * service.commission_percent / 100)
+    operator_share = final_price - commission
+
+    # آپدیت سرویس
     service.status = 'completed'
     service.completed_at = timezone.now()
+    service.commission_amount = commission
     service.save()
 
-    # آپدیت آمار اپراتور
+    # آپدیت اپراتور
     operator.completed_jobs += 1
-    operator.pending_payment += (service.final_price - service.commission_amount)
+    operator.total_earned += final_price
+    operator.wallet_balance += operator_share  # اضافه کردن سهم به کیف پول
+    operator.pending_payment = operator.total_earned - operator.wallet_balance  # مبلغی که هنوز پرداخت نشده
     operator.save()
+
+    # ثبت تراکنش
+    Transaction.objects.create(
+        operator=operator,
+        service=service,
+        amount=operator_share,
+        transaction_type='operator_pay',
+        description=f'درآمد خدمت: {service.title} (کمیسیون {commission} تومان)'
+    )
 
     service.chat.update_status('completed')
 
-    return JsonResponse({'success': True})
+    return JsonResponse({
+        'success': True,
+        'new_balance': operator.wallet_balance,
+        'pending_payment': operator.pending_payment,
+        'total_earned': operator.total_earned,
+        'commission': commission,
+        'operator_share': operator_share,
+    })

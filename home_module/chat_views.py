@@ -1,12 +1,63 @@
 # home_module/chat_views.py
 
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 import json
+import functools
+
 from .models import Service
-from account_module.models import Customer, Operator
+from account_module.models import Customer
+from home_module.models import Operator
+
+
+# ============================================
+# احراز هویت ترکیبی (مشتری + اپراتور)
+# ============================================
+def login_required_any(view_func):
+    """
+    دکوریتور سفارشی برای احراز هویت
+    هم مشتری (Customer) و هم اپراتور (Operator) رو قبول میکنه
+    """
+
+    @functools.wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        user = get_any_user(request)
+        if user is None:
+            return JsonResponse({
+                'error': 'لطفاً وارد شوید',
+                'redirect': '/op-login/' if is_operator_request(request) else '/login/'
+            }, status=401)
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+def get_any_user(request):
+    """
+    دریافت کاربر (مشتری یا اپراتور) از request
+    """
+    # بررسی مشتری (django auth)
+    if request.user.is_authenticated and isinstance(request.user, Customer):
+        return request.user
+
+    # بررسی اپراتور (session)
+    operator_id = request.session.get('operator_id')
+    if operator_id:
+        try:
+            return Operator.objects.get(id=operator_id)
+        except Operator.DoesNotExist:
+            pass
+
+    return None
+
+
+def is_operator_request(request):
+    """تشخیص اینکه درخواست از سمت اپراتور است"""
+    return request.session.get('operator_id') is not None
 
 
 def get_user_type(user):
@@ -20,25 +71,32 @@ def get_user_type(user):
 
 def has_chat_access(user, service):
     """بررسی دسترسی کاربر به چت"""
-    user_type = get_user_type(user)
-    if user_type == 'customer':
+    if isinstance(user, Customer):
         return user == service.customer
-    elif user_type == 'operator':
+    elif isinstance(user, Operator):
         return user == service.operator
     return False
 
 
-@login_required
+# ============================================
+# API های چت
+# ============================================
+
 @require_GET
 def get_messages(request, service_id):
     """دریافت پیام‌های چت"""
+    user = get_any_user(request)
+
+    if user is None:
+        return JsonResponse({'error': 'لطفاً وارد شوید'}, status=401)
+
     service = get_object_or_404(Service, id=service_id)
 
-    if not has_chat_access(request.user, service):
+    if not has_chat_access(user, service):
         return JsonResponse({'error': 'دسترسی غیرمجاز'}, status=403)
 
     page = int(request.GET.get('page', 1))
-    user_type = get_user_type(request.user)
+    user_type = get_user_type(user)
 
     messages = service.chat.get_messages(
         page=page,
@@ -49,13 +107,17 @@ def get_messages(request, service_id):
     return JsonResponse(messages)
 
 
-@login_required
 @require_POST
 def send_message(request, service_id):
     """ارسال پیام جدید"""
+    user = get_any_user(request)
+
+    if user is None:
+        return JsonResponse({'error': 'لطفاً وارد شوید'}, status=401)
+
     service = get_object_or_404(Service, id=service_id)
 
-    if not has_chat_access(request.user, service):
+    if not has_chat_access(user, service):
         return JsonResponse({'error': 'دسترسی غیرمجاز'}, status=403)
 
     if service.status in ['completed', 'delivered', 'cancelled']:
@@ -68,11 +130,11 @@ def send_message(request, service_id):
         if not content:
             return JsonResponse({'error': 'متن پیام الزامی است'}, status=400)
 
-        user_type = get_user_type(request.user)
-        sender_name = request.user.full_name or request.user.phone
+        user_type = get_user_type(user)
+        sender_name = user.full_name or (user.phone if hasattr(user, 'phone') else 'کاربر')
 
         message = service.chat.add_message(
-            sender_id=str(request.user.id),
+            sender_id=str(user.id),
             sender_name=sender_name,
             sender_type=user_type,
             content=content
@@ -89,26 +151,33 @@ def send_message(request, service_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@login_required
 @require_POST
 def mark_as_read(request, service_id):
     """علامت‌گذاری پیام‌ها به عنوان خوانده شده"""
+    user = get_any_user(request)
+
+    if user is None:
+        return JsonResponse({'error': 'لطفاً وارد شوید'}, status=401)
+
     service = get_object_or_404(Service, id=service_id)
 
-    if not has_chat_access(request.user, service):
+    if not has_chat_access(user, service):
         return JsonResponse({'error': 'دسترسی غیرمجاز'}, status=403)
 
-    user_type = get_user_type(request.user)
+    user_type = get_user_type(user)
     service.chat.mark_as_read(user_type)
 
     return JsonResponse({'success': True})
 
 
-@login_required
 @require_GET
 def get_unread_count(request):
     """دریافت تعداد پیام‌های خوانده نشده"""
-    user = request.user
+    user = get_any_user(request)
+
+    if user is None:
+        return JsonResponse({'error': 'لطفاً وارد شوید'}, status=401)
+
     user_type = get_user_type(user)
 
     if user_type == 'customer':
@@ -131,11 +200,14 @@ def get_unread_count(request):
     })
 
 
-@login_required
 @require_GET
 def get_chat_list(request):
     """لیست چت‌های کاربر"""
-    user = request.user
+    user = get_any_user(request)
+
+    if user is None:
+        return JsonResponse({'error': 'لطفاً وارد شوید'}, status=401)
+
     user_type = get_user_type(user)
 
     if user_type == 'customer':

@@ -24,7 +24,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'home_module',
     'account_module',
-    'admin_panel'
+    'admin_panel',
+    'django.contrib.humanize'
 ]
 
 MIDDLEWARE = [
