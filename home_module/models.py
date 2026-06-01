@@ -1,3 +1,727 @@
-from django.db import models
+# home_module/models.py
 
-# Create your models here.
+from django.db import models
+from django.conf import settings
+from django.core.validators import MinValueValidator
+import uuid
+import os
+import json
+import hashlib
+from datetime import datetime
+from threading import Lock
+
+
+# ============================================
+# Operator Model
+# ============================================
+class Operator(models.Model):
+    """مدل اپراتور - کاملاً مستقل از Customer"""
+
+    ROLE_CHOICES = [
+        ('operator', 'اپراتور عادی'),
+        ('owner', 'صاحب سایت'),
+        ('admin', 'مدیر'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        verbose_name='نام کاربری'
+    )
+    phone = models.CharField(
+        max_length=11,
+        unique=True,
+        verbose_name='شماره تلفن'
+    )
+    full_name = models.CharField(max_length=255, verbose_name='نام کامل')
+    email = models.EmailField(null=True, blank=True, verbose_name='ایمیل')
+    password = models.CharField(max_length=255, verbose_name='رمز عبور')
+    avatar = models.ImageField(
+        upload_to='avatars/operators/',
+        null=True,
+        blank=True,
+        verbose_name='آواتار'
+    )
+
+    # نقش و تخصص
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='operator',
+        verbose_name='نقش'
+    )
+    specialties = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='تخصص‌ها',
+        help_text='لیست تخصص‌های اپراتور: ["چاپ", "تایپ", "طراحی"]'
+    )
+
+    # امتیازدهی
+    rating = models.FloatField(default=0, verbose_name='امتیاز')
+    total_reviews = models.IntegerField(default=0, verbose_name='تعداد نظرات')
+    completed_jobs = models.IntegerField(default=0, verbose_name='کارهای تکمیل شده')
+
+    # وضعیت
+    is_active = models.BooleanField(default=True, verbose_name='فعال')
+    is_available = models.BooleanField(default=True, verbose_name='آماده به کار')
+    is_verified = models.BooleanField(default=False, verbose_name='تأیید شده')
+
+    # اطلاعات مالی
+    wallet_balance = models.BigIntegerField(default=0, verbose_name='اعتبار کیف پول (تومان)')
+    total_earned = models.BigIntegerField(default=0, verbose_name='کل درآمد (تومان)')
+    pending_payment = models.BigIntegerField(default=0, verbose_name='در انتظار پرداخت (تومان)')
+
+    # زمان‌ها
+    last_login = models.DateTimeField(null=True, blank=True, verbose_name='آخرین ورود')
+    last_seen = models.DateTimeField(null=True, blank=True, verbose_name='آخرین فعالیت')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ثبت‌نام')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='آخرین بروزرسانی')
+
+    class Meta:
+        db_table = 'operators'
+        verbose_name = 'اپراتور'
+        verbose_name_plural = 'اپراتورها'
+        indexes = [
+            models.Index(fields=['phone']),
+            models.Index(fields=['role']),
+            models.Index(fields=['is_available']),
+        ]
+
+    def __str__(self):
+        return f"{self.full_name} | {self.get_role_display()}"
+
+    @property
+    def is_owner(self):
+        """بررسی صاحب سایت بودن"""
+        return self.role == 'owner'
+
+    @property
+    def is_admin(self):
+        """بررسی مدیر بودن"""
+        return self.role in ['admin', 'owner']
+
+    def set_password(self, raw_password):
+        """تنظیم رمز عبور هش شده"""
+        self.password = hashlib.sha256(raw_password.encode()).hexdigest()
+
+    def check_password(self, raw_password):
+        """بررسی رمز عبور"""
+        hashed = hashlib.sha256(raw_password.encode()).hexdigest()
+        return self.password == hashed
+
+    def get_active_services_count(self):
+        """تعداد خدمات فعال"""
+        return self.services.filter(
+            status__in=['accepted', 'in_progress']
+        ).count()
+
+
+# ============================================
+# Service Model
+# ============================================
+class Service(models.Model):
+    """مدل اصلی خدمت/سفارش"""
+
+    STATUS_CHOICES = [
+        ('pending', 'در انتظار پذیرش'),
+        ('accepted', 'پذیرفته شده'),
+        ('in_progress', 'در حال انجام'),
+        ('completed', 'آماده تحویل'),
+        ('delivered', 'تحویل داده شده'),
+        ('cancelled', 'لغو شده'),
+        ('rejected', 'رد شده'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('low', 'کم'),
+        ('medium', 'متوسط'),
+        ('high', 'زیاد'),
+        ('urgent', 'فوری'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tracking_code = models.CharField(
+        max_length=12,
+        unique=True,
+        verbose_name='کد پیگیری'
+    )
+
+    # ارتباط با مشتری و اپراتور
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='services',
+        verbose_name='مشتری'
+    )
+    operator = models.ForeignKey(
+        Operator,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='services',
+        verbose_name='اپراتور'
+    )
+
+    # اطلاعات خدمت
+    title = models.CharField(max_length=255, verbose_name='عنوان خدمت')
+    description = models.TextField(verbose_name='توضیحات خدمت')
+    customer_note = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='توضیحات مشتری'
+    )
+    operator_note = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='یادداشت اپراتور'
+    )
+
+    # وضعیت
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        verbose_name='وضعیت'
+    )
+    priority = models.CharField(
+        max_length=10,
+        choices=PRIORITY_CHOICES,
+        default='medium',
+        verbose_name='اولویت'
+    )
+
+    # مالی
+    price = models.BigIntegerField(
+        validators=[MinValueValidator(0)],
+        verbose_name='قیمت (تومان)'
+    )
+    discount_amount = models.BigIntegerField(default=0, verbose_name='مبلغ تخفیف (تومان)')
+    final_price = models.BigIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='قیمت نهایی (تومان)'
+    )
+    commission_percent = models.FloatField(default=20.0, verbose_name='درصد کمیسیون')
+    commission_amount = models.BigIntegerField(default=0, verbose_name='مبلغ کمیسیون (تومان)')
+
+    # پرداخت
+    is_paid = models.BooleanField(default=False, verbose_name='پرداخت شده')
+    payment_date = models.DateTimeField(null=True, blank=True, verbose_name='تاریخ پرداخت')
+    payment_ref = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name='کد پیگیری پرداخت'
+    )
+
+    # فایل‌ها
+    result_file = models.FileField(
+        upload_to='results/%Y/%m/',
+        null=True,
+        blank=True,
+        verbose_name='فایل نتیجه'
+    )
+    result_file_name = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name='نام فایل نتیجه'
+    )
+    result_file_size = models.BigIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='حجم فایل نتیجه (بایت)'
+    )
+
+    # زمان‌بندی
+    deadline = models.DateTimeField(null=True, blank=True, verbose_name='مهلت تحویل')
+    accepted_at = models.DateTimeField(null=True, blank=True, verbose_name='زمان پذیرش')
+    started_at = models.DateTimeField(null=True, blank=True, verbose_name='زمان شروع')
+    completed_at = models.DateTimeField(null=True, blank=True, verbose_name='زمان تکمیل')
+    delivered_at = models.DateTimeField(null=True, blank=True, verbose_name='زمان تحویل')
+
+    # امتیازدهی
+    rating = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='امتیاز مشتری (۱ تا ۵)'
+    )
+    review = models.TextField(null=True, blank=True, verbose_name='نظر مشتری')
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='آخرین بروزرسانی')
+
+    # چت (property - در دیتابیس ذخیره نمیشه)
+    _chat = None
+
+    class Meta:
+        db_table = 'services'
+        verbose_name = 'خدمت'
+        verbose_name_plural = 'خدمات'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['tracking_code']),
+            models.Index(fields=['status']),
+            models.Index(fields=['customer', 'status']),
+            models.Index(fields=['operator', 'status']),
+            models.Index(fields=['created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} | {self.tracking_code}"
+
+    def save(self, *args, **kwargs):
+        # تولید کد پیگیری خودکار
+        if not self.tracking_code:
+            self.tracking_code = self._generate_tracking_code()
+
+        # محاسبه قیمت نهایی
+        if self.final_price is None:
+            self.final_price = self.price - self.discount_amount
+
+        # محاسبه کمیسیون
+        if self.commission_amount == 0 and self.final_price:
+            self.commission_amount = int(self.final_price * self.commission_percent / 100)
+
+        is_new = self._state.adding
+        super().save(*args, **kwargs)
+
+        # ایجاد فایل چت برای خدمت جدید
+        if is_new:
+            self.chat.create()
+
+    def _generate_tracking_code(self):
+        """تولید کد پیگیری یکتا"""
+        import random
+        while True:
+            code = 'KAF' + ''.join(random.choices('0123456789', k=9))
+            if not Service.objects.filter(tracking_code=code).exists():
+                return code
+
+    @property
+    def chat(self):
+        """
+        دسترسی به چت خدمت
+        استفاده: service.chat.add_message(...)
+        """
+        if self._chat is None:
+            self._chat = ServiceChat(self)
+        return self._chat
+
+    def can_chat(self, user) -> bool:
+        """بررسی امکان چت برای کاربر"""
+        from account_module.models import Customer
+
+        if isinstance(user, Customer):
+            return user == self.customer
+        elif isinstance(user, Operator):
+            return user == self.operator
+        return False
+
+    @property
+    def is_owner_service(self):
+        """بررسی اینکه اپراتور جزو صاحبان سایت است"""
+        return self.operator and self.operator.is_owner
+
+    @property
+    def operator_earnings(self):
+        """درآمد اپراتور از این خدمت (پس از کسر کمیسیون)"""
+        if self.final_price and self.commission_amount:
+            return self.final_price - self.commission_amount
+        return 0
+
+    def get_status_display_color(self):
+        """دریافت رنگ وضعیت برای نمایش در UI"""
+        colors = {
+            'pending': '#fbbf24',
+            'accepted': '#60a5fa',
+            'in_progress': '#3b82f6',
+            'completed': '#4ade80',
+            'delivered': '#22c55e',
+            'cancelled': '#f87171',
+            'rejected': '#ef4444',
+        }
+        return colors.get(self.status, '#6b7280')
+
+
+# ============================================
+# ServiceChat - مدیریت چت با JSON
+# ============================================
+class ServiceChat:
+    """
+    کلاس مدیریت چت برای هر خدمت
+    ذخیره‌سازی در فایل JSON مستقل از دیتابیس
+    """
+
+    CHAT_DIR = 'media/chats'
+    _locks = {}
+
+    def __init__(self, service):
+        self.service = service
+        self.service_id = str(service.id).replace('-', '')
+        self.file_path = os.path.join(self.CHAT_DIR, f'service_{self.service_id}.json')
+        self._ensure_dir()
+
+    @classmethod
+    def _ensure_dir(cls):
+        """اطمینان از وجود پوشه چت"""
+        os.makedirs(cls.CHAT_DIR, exist_ok=True)
+
+    @classmethod
+    def _get_lock(cls, service_id):
+        """قفل برای جلوگیری از نوشتن همزمان (Thread Safety)"""
+        key = str(service_id)
+        if key not in cls._locks:
+            cls._locks[key] = Lock()
+        return cls._locks[key]
+
+    def exists(self) -> bool:
+        """بررسی وجود فایل چت"""
+        return os.path.exists(self.file_path)
+
+    def create(self) -> dict:
+        """ایجاد فایل چت جدید"""
+        if self.exists():
+            return self.read()
+
+        chat_data = {
+            "service_id": str(self.service.id),
+            "tracking_code": self.service.tracking_code,
+            "title": self.service.title,
+            "status": self.service.status,
+            "price": self.service.price,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat(),
+            "participants": {
+                "customer": {
+                    "id": str(self.service.customer.id),
+                    "name": self.service.customer.full_name,
+                    "phone": self.service.customer.phone
+                },
+                "operator": {
+                    "id": str(self.service.operator.id) if self.service.operator else None,
+                    "name": self.service.operator.full_name if self.service.operator else None,
+                    "phone": self.service.operator.phone if self.service.operator else None
+                }
+            },
+            "messages": [],
+            "files": [],
+            "metadata": {
+                "total_messages": 0,
+                "last_message_at": None,
+                "last_message_by": None,
+                "unread_customer": 0,
+                "unread_operator": 0,
+                "is_active": True
+            }
+        }
+
+        with open(self.file_path, 'w', encoding='utf-8') as f:
+            json.dump(chat_data, f, ensure_ascii=False, indent=2)
+
+        return chat_data
+
+    def read(self) -> dict:
+        """خواندن فایل چت"""
+        if not self.exists():
+            return self.create()
+
+        try:
+            with open(self.file_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            return self.create()
+
+    def _write(self, data: dict):
+        """نوشتن در فایل"""
+        data['updated_at'] = datetime.now().isoformat()
+        with open(self.file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+    def add_message(self, sender_id: str, sender_name: str,
+                    sender_type: str, content: str,
+                    file_info: dict = None) -> dict:
+        """
+        اضافه کردن پیام جدید
+
+        Parameters:
+            sender_id: شناسه فرستنده
+            sender_name: نام فرستنده
+            sender_type: 'customer' یا 'operator'
+            content: متن پیام
+            file_info: اطلاعات فایل (اختیاری)
+
+        Returns:
+            dict: پیام ایجاد شده
+        """
+        lock = self._get_lock(self.service_id)
+
+        with lock:
+            data = self.read()
+
+            message = {
+                "id": data['metadata']['total_messages'] + 1,
+                "sender_id": sender_id,
+                "sender_name": sender_name,
+                "sender_type": sender_type,
+                "content": content,
+                "file": file_info,
+                "timestamp": datetime.now().isoformat(),
+                "is_read": False,
+                "edited": False
+            }
+
+            data['messages'].append(message)
+            data['metadata']['total_messages'] += 1
+            data['metadata']['last_message_at'] = message['timestamp']
+            data['metadata']['last_message_by'] = sender_id
+
+            # آپدیت شمارنده پیام‌های خوانده نشده
+            if sender_type == 'customer':
+                data['metadata']['unread_operator'] += 1
+            else:
+                data['metadata']['unread_customer'] += 1
+
+            self._write(data)
+            return message
+
+    def get_messages(self, page: int = 1, page_size: int = 50,
+                     user_type: str = None) -> dict:
+        """
+        دریافت پیام‌ها با pagination
+
+        Parameters:
+            page: شماره صفحه
+            page_size: تعداد پیام در هر صفحه
+            user_type: 'customer' یا 'operator' برای علامت‌گذاری خوانده شده
+
+        Returns:
+            dict: شامل messages, has_more, total, unread_count
+        """
+        data = self.read()
+        all_messages = data['messages']
+        total = len(all_messages)
+
+        # علامت‌گذاری به عنوان خوانده شده
+        if user_type:
+            self._mark_as_read(data, user_type)
+
+        # Pagination - از آخر به اول (جدیدترین اول)
+        start = max(0, total - (page * page_size))
+        end = total - ((page - 1) * page_size)
+
+        messages = all_messages[start:end]
+        messages.reverse()  # جدیدترین اول
+
+        return {
+            "messages": messages,
+            "has_more": start > 0,
+            "total": total,
+            "page": page,
+            "unread_count": data['metadata'].get(f'unread_{user_type}', 0),
+            "participants": data['participants']
+        }
+
+    def _mark_as_read(self, data: dict, user_type: str):
+        """علامت‌گذاری پیام‌ها به عنوان خوانده شده و ذخیره"""
+        for msg in data['messages']:
+            if not msg['is_read'] and msg['sender_type'] != user_type:
+                msg['is_read'] = True
+
+        data['metadata'][f'unread_{user_type}'] = 0
+        self._write(data)
+
+    def mark_as_read(self, user_type: str) -> bool:
+        """علامت‌گذاری همه پیام‌ها به عنوان خوانده شده"""
+        data = self.read()
+        self._mark_as_read(data, user_type)
+        return True
+
+    def get_unread_count(self, user_type: str) -> int:
+        """دریافت تعداد پیام‌های خوانده نشده"""
+        data = self.read()
+        return data['metadata'].get(f'unread_{user_type}', 0)
+
+    def get_last_message(self) -> dict:
+        """دریافت آخرین پیام"""
+        data = self.read()
+        if data['messages']:
+            return data['messages'][-1]
+        return None
+
+    def get_last_messages_preview(self, count: int = 1) -> list:
+        """دریافت آخرین پیام‌ها برای پیش‌نمایش"""
+        data = self.read()
+        messages = data['messages'][-count:]
+        messages.reverse()
+        return messages
+
+    def add_file(self, uploaded_by: str, file_info: dict) -> dict:
+        """
+        ثبت فایل آپلود شده در چت
+
+        Parameters:
+            uploaded_by: 'customer' یا 'operator'
+            file_info: {'name': '...', 'url': '...', 'size': ...}
+        """
+        data = self.read()
+
+        file_record = {
+            "id": len(data['files']) + 1,
+            "uploaded_by": uploaded_by,
+            "file_name": file_info.get('name'),
+            "file_url": file_info.get('url'),
+            "file_size": file_info.get('size'),
+            "uploaded_at": datetime.now().isoformat()
+        }
+
+        data['files'].append(file_record)
+        self._write(data)
+        return file_record
+
+    def get_files(self) -> list:
+        """دریافت لیست فایل‌های آپلود شده"""
+        data = self.read()
+        return data.get('files', [])
+
+    def update_status(self, status: str):
+        """آپدیت وضعیت خدمت در فایل چت"""
+        data = self.read()
+        data['status'] = status
+        self._write(data)
+
+    def update_operator(self, operator):
+        """آپدیت اطلاعات اپراتور در چت"""
+        data = self.read()
+        data['participants']['operator'] = {
+            "id": str(operator.id),
+            "name": operator.full_name,
+            "phone": operator.phone
+        }
+        self._write(data)
+
+    def delete_message(self, message_id: int) -> bool:
+        """حذف منطقی پیام"""
+        lock = self._get_lock(self.service_id)
+
+        with lock:
+            data = self.read()
+
+            for msg in data['messages']:
+                if msg['id'] == message_id:
+                    msg['deleted'] = True
+                    msg['content'] = '⛔ این پیام حذف شده است'
+                    msg['edited'] = True
+                    self._write(data)
+                    return True
+
+            return False
+
+    def get_statistics(self) -> dict:
+        """دریافت آمار چت"""
+        data = self.read()
+        messages = data['messages']
+
+        customer_msgs = sum(1 for m in messages if m['sender_type'] == 'customer')
+        operator_msgs = sum(1 for m in messages if m['sender_type'] == 'operator')
+
+        return {
+            "total_messages": len(messages),
+            "customer_messages": customer_msgs,
+            "operator_messages": operator_msgs,
+            "total_files": len(data.get('files', [])),
+            "first_message": messages[0]['timestamp'] if messages else None,
+            "last_message": messages[-1]['timestamp'] if messages else None,
+            "is_active": data['metadata']['is_active']
+        }
+
+
+# ============================================
+# Transaction Model
+# ============================================
+class Transaction(models.Model):
+    """مدل تراکنش‌های مالی"""
+
+    TYPE_CHOICES = [
+        ('deposit', 'شارژ کیف پول'),
+        ('payment', 'پرداخت خدمت'),
+        ('commission', 'کمیسیون سایت'),
+        ('operator_pay', 'پرداخت به اپراتور'),
+        ('refund', 'بازگشت وجه'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # طرفین تراکنش
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='transactions',
+        verbose_name='مشتری'
+    )
+    operator = models.ForeignKey(
+        Operator,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='transactions',
+        verbose_name='اپراتور'
+    )
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='transactions',
+        verbose_name='خدمت مرتبط'
+    )
+
+    # اطلاعات تراکنش
+    amount = models.BigIntegerField(verbose_name='مبلغ (تومان)')
+    transaction_type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        verbose_name='نوع تراکنش'
+    )
+    description = models.TextField(null=True, blank=True, verbose_name='توضیحات')
+    ref_code = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='کد پیگیری'
+    )
+    is_successful = models.BooleanField(default=True, verbose_name='موفق')
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ تراکنش')
+
+    class Meta:
+        db_table = 'transactions'
+        verbose_name = 'تراکنش'
+        verbose_name_plural = 'تراکنش‌ها'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['customer', 'created_at']),
+            models.Index(fields=['operator', 'created_at']),
+            models.Index(fields=['transaction_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} | {self.amount:,} تومان"
+
+    def save(self, *args, **kwargs):
+        # تولید کد پیگیری خودکار
+        if not self.ref_code:
+            self.ref_code = self._generate_ref_code()
+        super().save(*args, **kwargs)
+
+    def _generate_ref_code(self):
+        """تولید کد پیگیری یکتا برای تراکنش"""
+        import random
+        import string
+        while True:
+            code = 'TRX' + ''.join(random.choices(string.digits, k=12))
+            if not Transaction.objects.filter(ref_code=code).exists():
+                return code
