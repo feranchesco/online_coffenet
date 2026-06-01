@@ -1,0 +1,80 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}
+	صفحه مدیریت سایت
+{% endblock %}
+
+{% block content %}
+
+  <!-- دکمه برگشت -->
+  <a href="/" class="back-btn" title="بازگشت">⬅️</a>
+
+  <div class="main-container">
+    <!-- هدر ادمین -->
+    <div class="admin-header">
+      <div class="admin-avatar">🛡️</div>
+      <div class="admin-info">
+        <div class="admin-name">پنل مدیریت کل</div>
+        <div class="admin-role">👑 مدیریت ارشد سایت</div>
+        <div class="admin-badge">🔴 دسترسی کامل</div>
+      </div>
+    </div>
+
+    <!-- آمار کلی -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value" id="totalProjects">۰</div>
+        <div class="stat-label">کل پروژه‌ها</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚙️</div>
+        <div class="stat-value" id="activeProjects">۰</div>
+        <div class="stat-label">در حال انجام</div>
+      </div>
+      <div class="stat-card highlight">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value green" id="doneProjects">۰</div>
+        <div class="stat-label">تکمیل شده</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value gold" id="totalOperators">۰</div>
+        <div class="stat-label">اپراتورها</div>
+      </div>
+    </div>
+
+    <!-- تب‌ها -->
+    <div class="panel-tabs">
+      <button class="tab-btn active" data-tab="projects">📋 همه پروژه‌ها</button>
+      <button class="tab-btn" data-tab="operators">👥 اپراتورها و حقوق</button>
+      <button class="tab-btn" data-tab="revenue">💰 درآمد کل</button>
+    </div>
+
+    <!-- محتوای تب‌ها -->
+    <div id="tabContent"></div>
+  </div>
+
+
+  <!-- مودال تأیید پرداخت -->
+  <div class="modal-overlay" id="payConfirmModal">
+    <div class="modal-box">
+      <div style="font-size:3rem;">💳</div>
+      <p id="payConfirmMessage">آیا از پرداخت اطمینان دارید؟</p>
+      <div class="modal-buttons">
+        <button class="btn-confirm" id="payConfirmYes">✅ بله، پرداخت کن</button>
+        <button class="btn-cancel" id="payConfirmNo">انصراف</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال اعلان -->
+  <div class="modal-overlay" id="notificationModal">
+    <div class="modal-box">
+      <div style="font-size:2.5rem;">🔔</div>
+      <p id="notificationMessage">پیام</p>
+      <button class="btn-cancel" id="closeNotificationBtn" style="margin-top:1rem;">باشه</button>
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,496 @@
+/* ----- هدر ادمین ----- */
+.admin-header {
+    background: rgba(22, 25, 42, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2.5rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.6);
+    flex-wrap: wrap;
+}
+
+.admin-avatar {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #ef4444, #f97316);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+}
+
+.admin-info {
+    flex: 1;
+    min-width: 150px;
+}
+
+.admin-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #f3efff;
+}
+
+.admin-role {
+    font-size: 0.85rem;
+    color: #fbbf24;
+    margin-top: 0.2rem;
+    font-weight: 600;
+}
+
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    padding: 0.3rem 0.9rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 0.4rem;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ----- کارت‌های آمار کلی ----- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.8rem;
+}
+
+.stat-card {
+    background: rgba(22, 25, 42, 0.5);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 1.8rem;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.4);
+}
+
+.stat-card.highlight {
+    border-color: rgba(74, 222, 128, 0.4);
+    background: rgba(74, 222, 128, 0.08);
+}
+
+.stat-card.gold {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: rgba(251, 191, 36, 0.08);
+}
+
+.stat-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(to left, #e0c3fc, #8ec5fc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.stat-value.green {
+    background: linear-gradient(to left, #4ade80, #22c55e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.stat-value.gold {
+    background: linear-gradient(to left, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #b9c2e6;
+    margin-top: 0.2rem;
+}
+
+/* ----- تب‌ها ----- */
+.panel-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(22, 25, 42, 0.4);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 2.5rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    overflow-x: auto;
+}
+
+.tab-btn {
+    flex: 1;
+    min-width: 80px;
+    background: transparent;
+    border: none;
+    color: #cfc8ff;
+    padding: 0.7rem 1rem;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: 0.25s;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    background: rgba(239, 68, 68, 0.3);
+    color: white;
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ----- کارت پروژه ----- */
+.project-card {
+    background: rgba(22, 25, 42, 0.5);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 2.5rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.55);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.project-card:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.project-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.project-icon {
+    font-size: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.project-info {
+    flex: 1;
+    min-width: 120px;
+}
+
+.project-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #f3efff;
+}
+
+.project-desc {
+    font-size: 0.78rem;
+    color: #b9c2e6;
+}
+
+.project-status {
+    padding: 0.3rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-pending {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.status-progress {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-done {
+    background: rgba(74, 222, 128, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.project-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    flex-wrap: wrap;
+}
+
+.project-detail-label {
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+.project-price {
+    font-weight: 700;
+    color: #4ade80;
+    font-size: 1rem;
+}
+
+.commission-badge {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+/* ----- کارت اپراتور (لیست حقوق) ----- */
+.operator-salary-card {
+    background: rgba(22, 25, 42, 0.5);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 2.5rem;
+    padding: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+    transition: 0.3s;
+}
+
+.operator-salary-card.owner {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: rgba(251, 191, 36, 0.06);
+}
+
+.operator-salary-card:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.op-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+}
+
+.op-avatar.owner-avatar {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border-color: rgba(251, 191, 36, 0.5);
+}
+
+.op-avatar.normal-avatar {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.op-details {
+    flex: 1;
+    min-width: 120px;
+}
+
+.op-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #f3efff;
+}
+
+.op-name.owner-name {
+    color: #fbbf24;
+}
+
+.op-stats {
+    font-size: 0.75rem;
+    color: #b9c2e6;
+    margin-top: 0.2rem;
+}
+
+.op-earnings {
+    font-weight: 700;
+    color: #4ade80;
+    font-size: 1.1rem;
+    text-align: center;
+    min-width: 100px;
+}
+
+.op-commission {
+    font-size: 0.7rem;
+    color: #fbbf24;
+}
+
+.pay-btn {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    border: none;
+    color: #1a1c2e;
+    font-weight: 700;
+    padding: 0.6rem 1.3rem;
+    border-radius: 2.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: 0.25s;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+}
+
+.pay-btn:hover {
+    box-shadow: 0 8px 22px rgba(74, 222, 128, 0.5);
+    transform: scale(1.03);
+}
+
+.pay-btn.paid {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: default;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pay-btn.paid:hover {
+    box-shadow: none;
+    transform: none;
+}
+
+/* ----- بخش درآمد کل ----- */
+.revenue-section {
+    background: rgba(22, 25, 42, 0.5);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 2.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.6);
+}
+
+.revenue-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fbbf24;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.revenue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.8rem;
+}
+
+.revenue-card {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 1.8rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.revenue-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4ade80;
+}
+
+.revenue-value.gold {
+    color: #fbbf24;
+}
+
+.revenue-label {
+    font-size: 0.75rem;
+    color: #b9c2e6;
+    margin-top: 0.2rem;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.btn-confirm {
+    background: #4ade80;
+    border: none;
+    color: #1a1c2e;
+    padding: 0.7rem 2rem;
+    border-radius: 2.5rem;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 0.7rem 2rem;
+    border-radius: 2.5rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #b9c2e6;
+}
+
+.empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.owner-tag {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1a1c2e;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+@media (max-width: 500px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .revenue-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .operator-salary-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}

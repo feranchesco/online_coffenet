@@ -1,0 +1,22 @@
+{% load render_partial %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>{% block title %}{% endblock %}</title>
+    {% include "shared/site_header_references.html" %}
+</head>
+<body>
+{% block content %}{% endblock %}
+<!-- نوار پایین -->
+<nav class="bottom-nav">
+    <button class="nav-item" id="navCol"><span>🤝</span><span>مشارکت</span></button>
+    <button class="nav-item" id="navReg"><span>📝</span><span>ثبت‌نام</span></button>
+    <button class="nav-item" id="navLog"><span>🔐</span><span>ورود</span></button>
+    <button class="nav-item" id="navPan"><span>📊</span><span>پنل</span></button>
+</nav>
+{% include "shared/site_footer_references.html" %}
+</body>
+</html>

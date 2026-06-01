@@ -1,0 +1,221 @@
+{% extends "shared/layout.html" %}
+{% block title %}کافی نت آنلاین{% endblock %}
+
+{% block content %}
+    <div id="app">
+        <!-- ========== اخبار کناری (دسکتاپ) ========== -->
+        <aside class="news-sidebar" id="newsSidebar">
+            <div class="news-sidebar-header">
+                <span>📰</span> اخبار روز
+            </div>
+            <div class="news-list" id="newsListContainer">
+                <!-- اخبار با جاوااسکریپت پر می‌شوند -->
+            </div>
+        </aside>
+
+        <!-- مودال اخبار موبایل -->
+        <div class="news-mobile-modal" id="newsMobileModal">
+            <div class="news-mobile-box">
+                <div class="news-sidebar-header">
+                    <span>📰</span> اخبار روز
+                </div>
+                <div class="news-list" id="newsMobileListContainer"></div>
+                <button class="close-news-mobile" id="closeNewsMobileBtn">بستن</button>
+            </div>
+        </div>
+        <section id="homePage" style="display: none">
+            <!-- ========== محتوای اصلی ========== -->
+            <!-- دکمه شناور اخبار (موبایل) -->
+            <button class="floating-news-btn" id="floatingNewsBtn" title="اخبار">📰</button>
+            <div class="main-container">
+                <header class="header">
+                    <div class="logo-icon">☕💻</div>
+                    <h1>کافی نت آنلاین</h1>
+                    <div class="subtitle">خدمات ردیفی با توضیحات سفارشی</div>
+                </header>
+
+                <!-- بخش کد تخفیف -->
+                <div class="discount-section">
+                    <div class="discount-label">🏷️ کد تخفیف</div>
+                    <input type="text" class="discount-input" id="discountCodeInput"
+                           placeholder="کد تخفیف خود را وارد کنید">
+                    <button class="discount-btn" id="applyDiscountBtn">اعمال</button>
+                </div>
+
+                <!-- خدمات ردیفی -->
+                <div class="services-list" id="servicesListContainer"></div>
+            </div>
+            <!-- دکمه پروفایل -->
+            {% if request.user.is_authenticated %}
+                <div class="floating-profile" id="profileBtn">👤</div>
+            {% endif %}
+            <!-- ========== مودال عمومی ========== -->
+            <div class="modal-overlay" id="modalOverlay">
+                <div class="modal-box">
+                    <div style="font-size:2.5rem;">✨</div>
+                    <p id="modalMessage">پیام</p>
+                    <button class="close-modal" id="closeModalBtn">باشه</button>
+                </div>
+            </div>
+
+            <!-- ========== بخش ثبت‌نام ========== -->
+            <div class="auth-section" id="registerSection" style="display: none;">
+                <div class="auth-card">
+                    <button class="auth-close-btn" onclick="hideAllAuth()">✕</button>
+                    <div class="auth-header">
+                        <span class="auth-icon">📝</span>
+                        <h2>ثبت‌نام در کافی نت</h2>
+                        <p class="auth-subtitle">حساب کاربری جدید بسازید</p>
+                    </div>
+
+                    <form class="auth-form" id="registerForm">
+                        <div class="input-group">
+                            <label class="input-label">👤 نام و نام خانوادگی</label>
+                            <input
+                                    type="text"
+                                    class="auth-input"
+                                    id="fullNameInput"
+                                    placeholder="مانند: علی محمدی"
+                                    required
+                            >
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">📱 شماره تلفن</label>
+                            <input
+                                    type="tel"
+                                    class="auth-input"
+                                    id="phoneInput"
+                                    placeholder="09xxxxxxxxx"
+                                    pattern="09[0-9]{9}"
+                                    required
+                            >
+                        </div>
+
+                        <button type="submit" class="auth-submit-btn">
+                            <span>✨</span> تکمیل ثبت‌نام
+                        </button>
+                    </form>
+
+                    <div class="auth-switch">
+                        قبلاً حساب دارید؟
+                        <button class="text-btn" onclick="showLogin()">وارد شوید</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== بخش ورود ========== -->
+            <div class="auth-section" id="loginSection" style="display: none;">
+                <div class="auth-card">
+                    <button class="auth-close-btn" onclick="hideAllAuth()">✕</button>
+                    <div class="auth-header">
+                        <span class="auth-icon">🔐</span>
+                        <h2>ورود به حساب</h2>
+                        <p class="auth-subtitle">به پنل خود دسترسی پیدا کنید</p>
+                    </div>
+
+                    <form class="auth-form" id="loginForm">
+                        <div class="input-group">
+                            <label class="input-label">👤 نام کاربری</label>
+                            <input
+                                    type="text"
+                                    class="auth-input"
+                                    id="usernameInput"
+                                    placeholder="نام کاربری یا شماره تلفن"
+                                    required
+                            >
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">🔒 رمز عبور</label>
+                            <div class="password-wrapper">
+                                <input
+                                        type="password"
+                                        class="auth-input"
+                                        id="passwordInput"
+                                        placeholder="••••••••"
+                                        required
+                                >
+                                <button type="button" class="toggle-password" id="togglePasswordBtn">👁️</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="auth-submit-btn">
+                            <span>🚀</span> ورود به حساب
+                        </button>
+                    </form>
+
+                    <div class="auth-switch">
+                        حساب ندارید؟
+                        <button class="text-btn" onclick="showRegister()">ثبت‌نام کنید</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="profilePage" style="display: none">
+            <!-- دکمه برگشت -->
+            <button class="back-btn" title="بازگشت">⬅️</button>
+
+            <div class="main-container">
+                <!-- هدر پنل کاربری -->
+                <div class="panel-header">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-info">
+                        <div class="user-name">دانیال وفادارنژاد</div>
+                        <div class="user-phone">📱 ۰۹۱۲۳۴۵۶۷۸۹</div>
+                        <div class="user-status">🟢 حساب فعال</div>
+                    </div>
+                </div>
+
+                <!-- کیف پول -->
+                <div class="wallet-card">
+                    <div class="wallet-info">
+                        <div class="wallet-icon">💰</div>
+                        <div>
+                            <div class="wallet-balance">۱۵۰,۰۰۰ تومان</div>
+                            <div class="wallet-label">اعتبار کیف پول</div>
+                        </div>
+                    </div>
+                    <button class="wallet-btn" onclick="showModal('💳 افزایش اعتبار (دمو)')">➕ شارژ</button>
+                </div>
+
+                <!-- تب‌ها -->
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="active">📋 سفارشات فعال</button>
+                    <button class="tab-btn" data-tab="completed">✅ تکمیل شده</button>
+                    <button class="tab-btn" data-tab="history">📜 تاریخچه</button>
+                </div>
+
+                <!-- محتوای تب‌ها -->
+                <div id="tabContent">
+                    <!-- سفارشات فعال (با جاوااسکریپت پر می‌شود) -->
+                </div>
+            </div>
+
+
+            <!-- مودال -->
+            <div class="modal-overlay" id="modalOverlay">
+                <div class="modal-box">
+                    <div style="font-size:2.5rem;" id="modalIcon">✨</div>
+                    <p id="modalMessage">پیام</p>
+                    <button class="close-modal" id="closeModalBtn">باشه</button>
+                </div>
+            </div>
+
+            <!-- مودال پرداخت -->
+            <div class="modal-overlay" id="paymentModal">
+                <div class="modal-box">
+                    <div style="font-size:2.5rem;">💳</div>
+                    <p id="paymentMessage"></p>
+                    <div style="display:flex; gap:0.8rem; justify-content:center; margin-top:1rem; flex-wrap:wrap;">
+                        <button class="close-modal" style="background:#4ade80; color:#1a1c2e;" id="confirmPaymentBtn">✅
+                            پرداخت
+                        </button>
+                        <button class="close-modal" id="cancelPaymentBtn">انصراف</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
