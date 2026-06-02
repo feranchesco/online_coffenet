@@ -14,7 +14,7 @@ urlpatterns = [
     path('logout/', views.customer_logout, name='customer_logout'),
 
     # پنل مشتری
-    path('panel/', views.customer_panel, name='customer_panel'),
+    # path('panel/', views.customer_panel, name='customer_panel'),
 
     # API ها
     path('api/service/create/', views.create_service, name='create_service'),

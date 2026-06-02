@@ -6,17 +6,27 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>{% block title %}{% endblock %}</title>
+    {% block extera_css %}{% endblock %}
     {% include "shared/site_header_references.html" %}
 </head>
 <body>
 {% block content %}{% endblock %}
 <!-- نوار پایین -->
 <nav class="bottom-nav">
-    <button class="nav-item" id="navCol"><span>🤝</span><span>مشارکت</span></button>
-    <button class="nav-item" id="navReg"><span>📝</span><span>ثبت‌نام</span></button>
-    <button class="nav-item" id="navLog"><span>🔐</span><span>ورود</span></button>
-    <button class="nav-item" id="navPan"><span>📊</span><span>پنل</span></button>
+    {% if not request.user.is_authenticated %}
+    	<button class="nav-item" id="navReg"><span>📝</span><span>ثبت‌نام</span></button>
+        <button class="nav-item" id="navLog"><span>🔐</span><span>ورود</span></button>
+    {% endif %}
+    {% if request.user.is_superuser %}
+    	<button class="nav-item" id="navPan"><span>📊</span><span>پنل مدیریت</span></button>
+    {% endif %}
+    {% if request.user.is_authenticated %}
+        <button id="homeBtn" class="nav-item"><span>🏠</span><span>خانه</span></button>
+    	<button class="nav-item" id="userPanBtn"><span>👤</span><span>پنل کاربری</span></button>
+        <a href="{% url 'customer_logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>
+    {% endif %} 
 </nav>
 {% include "shared/site_footer_references.html" %}
+{% block extra_js %}{% endblock %}
 </body>
 </html>

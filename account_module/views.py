@@ -13,9 +13,11 @@ import json
 from .models import Customer
 from home_module.models import Service, Operator, Transaction
 
+
 # Create your views here.
 def signup(request):
     return None
+
 
 # ============================================
 # احراز هویت
@@ -61,64 +63,64 @@ def customer_register(request):
 def customer_logout(request):
     """خروج مشتری"""
     logout(request)
-    return redirect('customer_login')
+    return redirect('home')
 
 
 # ============================================
 # پنل مشتری
 # ============================================
-@login_required
-def customer_panel(request):
-    """
-    پنل اصلی مشتری
-    نمایش همه سرویس‌ها با وضعیت‌های مختلف
-    """
-    customer = request.user
-
-    # دریافت همه سرویس‌های مشتری
-    services = Service.objects.filter(customer=customer).order_by('-created_at')
-
-    # آماده‌سازی داده‌ها برای template
-    services_data = []
-    for service in services:
-        # دریافت اطلاعات چت
-        chat_data = service.chat.read()
-        unread_count = service.chat.get_unread_count('customer')
-        last_message = service.chat.get_last_message()
-
-        services_data.append({
-            'id': str(service.id),
-            'tracking_code': service.tracking_code,
-            'title': service.title,
-            'description': service.description,
-            'status': service.status,
-            'status_display': service.get_status_display(),
-            'status_color': service.get_status_display_color(),
-            'priority': service.priority,
-            'price': service.price,
-            'final_price': service.final_price or service.price,
-            'is_paid': service.is_paid,
-            'operator_name': service.operator.full_name if service.operator else None,
-            'operator_role': service.operator.get_role_display() if service.operator else None,
-            'has_file': bool(service.result_file),
-            'result_file_url': service.result_file.url if service.result_file else None,
-            'result_file_name': service.result_file_name,
-            'unread_count': unread_count,
-            'last_message': last_message['content'][:50] if last_message else None,
-            'last_message_time': last_message['timestamp'] if last_message else None,
-            'created_at': service.created_at,
-        })
-
-    context = {
-        'customer': customer,
-        'services': services_data,
-        'wallet_balance': customer.wallet_balance,
-        'active_services': [s for s in services_data if s['status'] in ['pending', 'accepted', 'in_progress']],
-        'completed_services': [s for s in services_data if s['status'] in ['completed', 'delivered']],
-        'history_services': [s for s in services_data if s['status'] in ['delivered', 'cancelled', 'rejected']],
-    }
-
-    return render(request, 'account_module/customer_panel.html', context)
+# @login_required
+# def customer_panel(request):
+#     """
+#     پنل اصلی مشتری
+#     نمایش همه سرویس‌ها با وضعیت‌های مختلف
+#     """
+#     customer = request.user
+#
+#     # دریافت همه سرویس‌های مشتری
+#     services = Service.objects.filter(customer=customer).order_by('-created_at')
+#
+#     # آماده‌سازی داده‌ها برای template
+#     services_data = []
+#     for service in services:
+#         # دریافت اطلاعات چت
+#         chat_data = service.chat.read()
+#         unread_count = service.chat.get_unread_count('customer')
+#         last_message = service.chat.get_last_message()
+#
+#         services_data.append({
+#             'id': str(service.id),
+#             'tracking_code': service.tracking_code,
+#             'title': service.title,
+#             'description': service.description,
+#             'status': service.status,
+#             'status_display': service.get_status_display(),
+#             'status_color': service.get_status_display_color(),
+#             'priority': service.priority,
+#             'price': service.price,
+#             'final_price': service.final_price or service.price,
+#             'is_paid': service.is_paid,
+#             'operator_name': service.operator.full_name if service.operator else None,
+#             'operator_role': service.operator.get_role_display() if service.operator else None,
+#             'has_file': bool(service.result_file),
+#             'result_file_url': service.result_file.url if service.result_file else None,
+#             'result_file_name': service.result_file_name,
+#             'unread_count': unread_count,
+#             'last_message': last_message['content'][:50] if last_message else None,
+#             'last_message_time': last_message['timestamp'] if last_message else None,
+#             'created_at': service.created_at,
+#         })
+#
+#     context = {
+#         'customer': customer,
+#         'services': services_data,
+#         'wallet_balance': customer.wallet_balance,
+#         'active_services': [s for s in services_data if s['status'] in ['pending', 'accepted', 'in_progress']],
+#         'completed_services': [s for s in services_data if s['status'] in ['completed', 'delivered']],
+#         'history_services': [s for s in services_data if s['status'] in ['delivered', 'cancelled', 'rejected']],
+#     }
+#
+#     return render(request, 'account_module/customer_panel.html', context)
 
 
 # ============================================
@@ -240,3 +242,54 @@ def rate_service(request, service_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
+
+def profile(request):
+    """
+        پنل اصلی مشتری
+        نمایش همه سرویس‌ها با وضعیت‌های مختلف
+        """
+    customer = request.user
+
+    # دریافت همه سرویس‌های مشتری
+    services = Service.objects.filter(customer=customer).order_by('-created_at')
+
+    # آماده‌سازی داده‌ها برای template
+    services_data = []
+    for service in services:
+        # دریافت اطلاعات چت
+        chat_data = service.chat.read()
+        unread_count = service.chat.get_unread_count('customer')
+        last_message = service.chat.get_last_message()
+
+        services_data.append({
+            'id': str(service.id),
+            'tracking_code': service.tracking_code,
+            'title': service.title,
+            'description': service.description,
+            'status': service.status,
+            'status_display': service.get_status_display(),
+            'status_color': service.get_status_display_color(),
+            'priority': service.priority,
+            'price': service.price,
+            'final_price': service.final_price or service.price,
+            'is_paid': service.is_paid,
+            'operator_name': service.operator.full_name if service.operator else None,
+            'operator_role': service.operator.get_role_display() if service.operator else None,
+            'has_file': bool(service.result_file),
+            'result_file_url': service.result_file.url if service.result_file else None,
+            'result_file_name': service.result_file_name,
+            'unread_count': unread_count,
+            'last_message': last_message['content'][:50] if last_message else None,
+            'last_message_time': last_message['timestamp'] if last_message else None,
+            'created_at': service.created_at,
+        })
+
+    context = {
+        'customer': customer,
+        'services': services_data,
+        'wallet_balance': customer.wallet_balance,
+        'active_services': [s for s in services_data if s['status'] in ['pending', 'accepted', 'in_progress']],
+        'completed_services': [s for s in services_data if s['status'] in ['completed', 'delivered']],
+        'history_services': [s for s in services_data if s['status'] in ['delivered', 'cancelled', 'rejected']],
+    }
+    return render(request, 'account_module/profile.html', context)
