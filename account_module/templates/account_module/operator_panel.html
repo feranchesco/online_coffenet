@@ -1,0 +1,970 @@
+<!-- templates/home_module/operator_panel.html -->
+{% extends "shared/layout.html" %}
+{% load static %}
+
+{% block title %}پنل اپراتور | کافی نت آنلاین{% endblock %}
+
+{% block extra_css %}
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  .main-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 750px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 0 auto;
+  }
+
+  .operator-header {
+    background: rgba(22, 25, 42, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2.5rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    box-shadow: 0 20px 35px -10px rgba(0,0,0,0.6);
+    flex-wrap: wrap;
+  }
+
+  .operator-avatar-large {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    border: 3px solid rgba(255,255,255,0.3);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+  }
+
+  .operator-info { flex: 1; min-width: 150px; }
+  .operator-name { font-size: 1.3rem; font-weight: 700; color: #f3efff; }
+  .operator-role { font-size: 0.85rem; color: #a5b4fc; margin-top: 0.2rem; }
+  .operator-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    padding: 0.3rem 0.9rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 0.4rem;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .stat-card {
+    background: rgba(22, 25, 42, 0.5);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 1.8rem;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 10px 25px -8px rgba(0,0,0,0.4);
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(to left, #e0c3fc, #8ec5fc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .stat-label { font-size: 0.7rem; color: #b9c2e6; margin-top: 0.2rem; }
+
+  .panel-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(22, 25, 42, 0.4);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 2.5rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: 85px;
+    background: transparent;
+    border: none;
+    color: #cfc8ff;
+    padding: 0.7rem 1rem;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: 0.25s;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .tab-btn.active {
+    background: rgba(139, 92, 246, 0.4);
+    color: white;
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+  }
+
+  .tab-badge {
+    position: absolute;
+    top: -5px;
+    left: 5px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 1rem;
+    font-weight: 700;
+  }
+
+  .job-card {
+    background: rgba(22, 25, 42, 0.5);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 2.5rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 20px 35px -12px rgba(0,0,0,0.55);
+    margin-bottom: 1rem;
+  }
+
+  .job-card.new-job {
+    border-color: rgba(251, 191, 36, 0.5);
+    animation: pulse-border 2s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { border-color: rgba(251, 191, 36, 0.3); }
+    50% { border-color: rgba(251, 191, 36, 0.7); }
+  }
+
+  .job-header { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .job-icon {
+    font-size: 2.2rem;
+    background: rgba(255,255,255,0.1);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .job-info { flex: 1; min-width: 120px; }
+  .job-title { font-weight: 700; font-size: 1.1rem; color: #f3efff; }
+  .job-desc { font-size: 0.8rem; color: #b9c2e6; }
+
+  .job-price {
+    font-weight: 700;
+    color: #4ade80;
+    font-size: 1.1rem;
+    background: rgba(74, 222, 128, 0.1);
+    padding: 0.4rem 1rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    white-space: nowrap;
+  }
+
+  .job-status {
+    padding: 0.3rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .status-pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+  .status-progress { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+  .status-done { background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+
+  .customer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .customer-avatar {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #ec4899, #f472b6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+  .customer-name { font-weight: 600; font-size: 0.85rem; color: #e4dcff; }
+  .customer-phone { font-size: 0.7rem; color: #a5b4fc; }
+
+  .customer-desc-box {
+    background: rgba(0,0,0,0.2);
+    border-radius: 1.2rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .customer-desc-label { font-weight: 600; color: #a78bfa; margin-bottom: 0.3rem; font-size: 0.75rem; }
+
+  .chat-section {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 1.8rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .chat-msg {
+    padding: 0.6rem 1rem;
+    border-radius: 1.2rem;
+    font-size: 0.8rem;
+    max-width: 85%;
+    line-height: 1.5;
+  }
+  .chat-customer { background: rgba(236, 72, 153, 0.2); align-self: flex-end; }
+  .chat-operator { background: rgba(99, 102, 241, 0.25); align-self: flex-start; }
+
+  .chat-input-row { display: flex; gap: 0.5rem; }
+  .chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 2rem;
+    padding: 0.6rem 1rem;
+    color: white;
+    font-size: 0.8rem;
+    outline: none;
+    font-family: inherit;
+  }
+  .chat-send-btn {
+    background: #6366f1;
+    border: none;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+
+  .upload-section {
+    background: rgba(74, 222, 128, 0.08);
+    border: 2px dashed rgba(74, 222, 128, 0.35);
+    border-radius: 1.8rem;
+    padding: 1.2rem;
+    text-align: center;
+    cursor: pointer;
+  }
+  .upload-section.has-file { border-color: rgba(74, 222, 128, 0.6); background: rgba(74, 222, 128, 0.2); }
+  .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-text { font-size: 0.85rem; color: #4ade80; font-weight: 600; }
+  .upload-hint { font-size: 0.7rem; color: #b9c2e6; margin-top: 0.3rem; }
+  .uploaded-file-name {
+    background: rgba(74, 222, 128, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    color: #4ade80;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .remove-file-btn {
+    background: rgba(239, 68, 68, 0.3);
+    border: none;
+    color: #f87171;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.7rem;
+  }
+
+  .action-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+
+  .btn-accept {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    border: none;
+    color: #1a1c2e;
+    font-weight: 700;
+    padding: 0.7rem 2rem;
+    border-radius: 2.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .btn-reject {
+    background: rgba(239, 68, 68, 0.25);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    font-weight: 600;
+    padding: 0.7rem 1.5rem;
+    border-radius: 2.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .btn-complete {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: none;
+    color: #1a1c2e;
+    font-weight: 700;
+    padding: 0.7rem 2rem;
+    border-radius: 2.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .btn-complete:disabled {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.3);
+    cursor: not-allowed;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    visibility: hidden;
+    opacity: 0;
+    transition: 0.25s;
+  }
+  .modal-overlay.active { visibility: visible; opacity: 1; }
+  .modal-box {
+    background: rgba(30,30,50,0.85);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 2.8rem;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    color: white;
+  }
+  .modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.8rem; }
+  .modal-buttons { display: flex; gap: 0.8rem; justify-content: center; margin-top: 1.2rem; flex-wrap: wrap; }
+  .btn-confirm { background: #4ade80; border: none; color: #1a1c2e; padding: 0.7rem 2rem; border-radius: 2.5rem; cursor: pointer; font-weight: 700; }
+  .btn-cancel { background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.7rem 2rem; border-radius: 2.5rem; cursor: pointer; font-weight: 600; }
+
+  .back-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    background: rgba(30, 32, 50, 0.55);
+    backdrop-filter: blur(18px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #e9e0ff;
+    cursor: pointer;
+    z-index: 50;
+    text-decoration: none;
+  }
+
+  .empty-state { text-align: center; padding: 2rem; color: #b9c2e6; }
+  .empty-icon { font-size: 3.5rem; margin-bottom: 0.8rem; }
+
+  @media (max-width: 450px) {
+    .operator-header { padding: 1.2rem; }
+    .job-card { padding: 1.2rem; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'home' %}" class="back-btn" title="بازگشت">⬅️</a>
+
+<div class="main-container">
+  <!-- هدر اپراتور -->
+  <div class="operator-header">
+    <div class="operator-avatar-large">🧑‍💻</div>
+    <div class="operator-info">
+      <div class="operator-name">{{ operator.full_name }}</div>
+      <div class="operator-role">{{ operator.specialties|join:" | " }}</div>
+      <div class="operator-rating">⭐ {{ operator.rating|floatformat:1 }} ({{ operator.total_reviews }} نظر)</div>
+    </div>
+  </div>
+
+  <!-- آمار -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value" id="pendingCount">{{ pending_count }}</div>
+      <div class="stat-label">🆕 در انتظار</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="progressCount">{{ progress_count }}</div>
+      <div class="stat-label">⚙️ در حال انجام</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="doneCount">{{ done_count }}</div>
+      <div class="stat-label">✅ تکمیل شده</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="earnings">{{ operator.pending_payment }}</div>
+      <div class="stat-label">💰 درآمد (تومان)</div>
+    </div>
+  </div>
+
+  <!-- تب‌ها -->
+  <div class="panel-tabs">
+    <button class="tab-btn active" data-tab="pending">
+      🆕 در انتظار
+      <span class="tab-badge" id="pendingBadge">{{ pending_count }}</span>
+    </button>
+    <button class="tab-btn" data-tab="progress">
+      ⚙️ در حال انجام
+      <span class="tab-badge" id="progressBadge">{{ progress_count }}</span>
+    </button>
+    <button class="tab-btn" data-tab="completed">
+      ✅ تکمیل شده
+    </button>
+  </div>
+
+  <!-- محتوا -->
+  <div id="tabContent">
+    <div style="text-align:center;padding:2rem;color:#b9c2e6;">⏳ در حال بارگذاری...</div>
+  </div>
+</div>
+
+<!-- مودال تأیید -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div style="font-size:3rem;" id="confirmModalIcon">❓</div>
+    <div class="modal-title" id="confirmModalTitle">عنوان</div>
+    <p id="confirmModalMessage">پیام</p>
+    <div class="modal-buttons">
+      <button class="btn-confirm" id="confirmModalYes">✅ بله</button>
+      <button class="btn-cancel" id="confirmModalNo">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال اعلان -->
+<div class="modal-overlay" id="notificationModal">
+  <div class="modal-box">
+    <div style="font-size:2.5rem;">🔔</div>
+    <p id="notificationMessage">پیام</p>
+    <button class="btn-cancel" id="closeNotificationBtn" style="margin-top:1rem;">باشه</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================
+// داده‌های اولیه
+// ============================================
+const operatorId = '{{ operator.id }}';
+const csrfToken = '{{ csrf_token }}';
+const servicesData = {{ services_json|safe }};
+
+let currentTab = 'pending';
+let confirmCallback = null;
+
+// ============================================
+// توابع مودال
+// ============================================
+function showNotification(text) {
+  document.getElementById('notificationMessage').textContent = text;
+  document.getElementById('notificationModal').classList.add('active');
+}
+
+function hideNotification() {
+  document.getElementById('notificationModal').classList.remove('active');
+}
+
+function showConfirm(icon, title, message, callback) {
+  document.getElementById('confirmModalIcon').textContent = icon;
+  document.getElementById('confirmModalTitle').textContent = title;
+  document.getElementById('confirmModalMessage').textContent = message;
+  confirmCallback = callback;
+  document.getElementById('confirmModal').classList.add('active');
+}
+
+function hideConfirm() {
+  document.getElementById('confirmModal').classList.remove('active');
+  confirmCallback = null;
+}
+
+// ============================================
+// API Calls
+// ============================================
+async function apiCall(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'X-CSRFToken': csrfToken,
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    }
+  });
+  return await response.json();
+}
+
+async function acceptJobApi(serviceId) {
+  return await apiCall(`/api/operator/service/${serviceId}/accept/`, { method: 'POST' });
+}
+
+async function rejectJobApi(serviceId) {
+  return await apiCall(`/api/operator/service/${serviceId}/reject/`, { method: 'POST' });
+}
+
+async function completeJobApi(serviceId) {
+  return await apiCall(`/api/operator/service/${serviceId}/complete/`, { method: 'POST' });
+}
+
+async function uploadFileApi(serviceId, file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`/api/operator/service/${serviceId}/upload/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
+    body: formData
+  });
+  return await response.json();
+}
+
+async function loadChatMessages(serviceId, page = 1) {
+  return await apiCall(`/api/chat/${serviceId}/messages/?page=${page}`);
+}
+
+async function sendChatMessageApi(serviceId, content) {
+  return await apiCall(`/api/chat/${serviceId}/send/`, {
+    method: 'POST',
+    body: JSON.stringify({ content })
+  });
+}
+
+// ============================================
+// توابع کمکی
+// ============================================
+function formatPrice(price) {
+  return Number(price).toLocaleString('fa-IR') + ' تومان';
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function getStatusClass(status) {
+  const classes = {
+    'pending': 'status-pending',
+    'accepted': 'status-progress',
+    'in_progress': 'status-progress',
+    'completed': 'status-done',
+    'delivered': 'status-done',
+  };
+  return classes[status] || 'status-pending';
+}
+
+function updateStats() {
+  const pending = servicesData.filter(s => s.status === 'pending').length;
+  const progress = servicesData.filter(s => ['accepted', 'in_progress'].includes(s.status)).length;
+  const done = servicesData.filter(s => ['completed', 'delivered'].includes(s.status)).length;
+
+  document.getElementById('pendingCount').textContent = pending;
+  document.getElementById('progressCount').textContent = progress;
+  document.getElementById('doneCount').textContent = done;
+  document.getElementById('pendingBadge').textContent = pending;
+  document.getElementById('progressBadge').textContent = progress;
+}
+
+// ============================================
+// رندر
+// ============================================
+function renderChatMessages(messages) {
+  if (!messages || messages.length === 0) {
+    return '<div style="text-align:center;color:#b9c2e6;font-size:0.8rem;">چت را شروع کنید</div>';
+  }
+
+  return messages.map(msg => {
+    const isOperator = msg.sender_id === operatorId || msg.sender_type === 'operator';
+    return `
+      <div class="chat-msg ${isOperator ? 'chat-operator' : 'chat-customer'}">
+        <div>${escapeHtml(msg.content)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function renderJobs(status) {
+  let jobs;
+
+  if (status === 'pending') {
+    jobs = servicesData.filter(s => s.status === 'pending');
+  } else if (status === 'progress') {
+    jobs = servicesData.filter(s => ['accepted', 'in_progress'].includes(s.status));
+  } else {
+    jobs = servicesData.filter(s => ['completed', 'delivered'].includes(s.status));
+  }
+
+  if (jobs.length === 0) {
+    const messages = {
+      'pending': { icon: '🎉', text: 'کار در انتظاری وجود ندارد' },
+      'progress': { icon: '📭', text: 'کاری در حال انجام ندارید' },
+      'completed': { icon: '📋', text: 'کار تکمیل شده‌ای ندارید' }
+    };
+    const msg = messages[status];
+    document.getElementById('tabContent').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${msg.icon}</div>
+        <p>${msg.text}</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+
+  for (const job of jobs) {
+    let chatData = { messages: [] };
+    if (['accepted', 'in_progress'].includes(job.status)) {
+      chatData = await loadChatMessages(job.id);
+    }
+
+    html += `
+      <div class="job-card ${job.status === 'pending' ? 'new-job' : ''}">
+        <div class="job-header">
+          <div class="job-icon">📋</div>
+          <div class="job-info">
+            <div class="job-title">${escapeHtml(job.title)}</div>
+            <div class="job-desc">${escapeHtml(job.description || '')}</div>
+          </div>
+          <span class="job-price">💲 ${formatPrice(job.final_price)}</span>
+        </div>
+
+        <div class="customer-info">
+          <div class="customer-avatar">👤</div>
+          <div>
+            <div class="customer-name">${escapeHtml(job.customer_name)}</div>
+            <div class="customer-phone">📱 ${escapeHtml(job.customer_phone)}</div>
+          </div>
+        </div>
+
+        ${job.customer_note ? `
+          <div class="customer-desc-box">
+            <div class="customer-desc-label">📝 توضیحات مشتری:</div>
+            <div>${escapeHtml(job.customer_note)}</div>
+          </div>
+        ` : ''}
+
+        ${['accepted', 'in_progress'].includes(job.status) ? `
+          <div class="chat-section" id="chat-${job.id}">
+            ${renderChatMessages(chatData.messages)}
+          </div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" id="chatInput-${job.id}"
+                   placeholder="پیام به مشتری..."
+                   onkeypress="if(event.key==='Enter') sendMessage('${job.id}')">
+            <button class="chat-send-btn" onclick="sendMessage('${job.id}')">📨 ارسال</button>
+          </div>
+
+          <div class="upload-section ${job.has_file ? 'has-file' : ''}"
+               id="uploadSection-${job.id}"
+               onclick="document.getElementById('fileInput-${job.id}').click()">
+            ${job.has_file ? `
+              <div class="upload-icon">✅</div>
+              <div class="upload-text">فایل آپلود شده</div>
+              <div class="uploaded-file-name">
+                📎 ${escapeHtml(job.result_file_name || 'فایل')}
+                <button class="remove-file-btn" onclick="event.stopPropagation();removeFile('${job.id}')">✕</button>
+              </div>
+            ` : `
+              <div class="upload-icon">📤</div>
+              <div class="upload-text">کلیک کنید یا فایل را بکشید</div>
+              <div class="upload-hint">PDF, ZIP, DOCX, JPG (حداکثر ۲۰ مگابایت)</div>
+            `}
+            <input type="file" id="fileInput-${job.id}" style="display:none;"
+                   accept=".pdf,.zip,.docx,.jpg,.jpeg,.png"
+                   onchange="handleFileUpload(event, '${job.id}')">
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn-complete" id="completeBtn-${job.id}"
+                    onclick="completeJob('${job.id}')"
+                    ${!job.has_file ? 'disabled' : ''}>
+              ${job.has_file ? '✅ تکمیل و تحویل کار' : '⚠️ ابتدا فایل را آپلود کنید'}
+            </button>
+          </div>
+        ` : ''}
+
+        ${job.status === 'pending' ? `
+          <div class="action-buttons">
+            <button class="btn-accept" onclick="acceptJob('${job.id}')">🤝 قبول کار</button>
+            <button class="btn-reject" onclick="rejectJob('${job.id}')">✕ رد کردن</button>
+          </div>
+        ` : ''}
+
+        ${['completed', 'delivered'].includes(job.status) ? `
+          <div style="text-align:center;color:#4ade80;font-weight:600;padding:0.5rem;">
+            ✅ این کار تکمیل و تحویل داده شده است
+            ${job.result_file_name ? `<div class="uploaded-file-name" style="margin-top:0.5rem;">📎 ${escapeHtml(job.result_file_name)}</div>` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  document.getElementById('tabContent').innerHTML = html;
+
+  // اسکرول چت‌ها
+  document.querySelectorAll('.chat-section').forEach(el => {
+    el.scrollTop = el.scrollHeight;
+  });
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById('tabContent').innerHTML = '<div style="text-align:center;padding:2rem;color:#b9c2e6;">⏳ در حال بارگذاری...</div>';
+  renderJobs(tab);
+}
+
+// ============================================
+// عملیات‌ها
+// ============================================
+async function acceptJob(serviceId) {
+  showConfirm('🤝', 'قبول کار', 'آیا از قبول این کار مطمئن هستید؟', async () => {
+    try {
+      const result = await acceptJobApi(serviceId);
+      if (result.success) {
+        const job = servicesData.find(s => s.id === serviceId);
+        if (job) job.status = 'accepted';
+        updateStats();
+        switchTab('progress');
+        showNotification('✅ کار با موفقیت پذیرفته شد!');
+      } else {
+        showNotification('⚠️ ' + (result.error || 'خطا'));
+      }
+    } catch (error) {
+      showNotification('⚠️ خطا در ارتباط با سرور');
+    }
+  });
+}
+
+async function rejectJob(serviceId) {
+  showConfirm('❌', 'رد کردن کار', 'آیا از رد این کار مطمئن هستید؟', async () => {
+    try {
+      const result = await rejectJobApi(serviceId);
+      if (result.success) {
+        const idx = servicesData.findIndex(s => s.id === serviceId);
+        if (idx !== -1) servicesData.splice(idx, 1);
+        updateStats();
+        switchTab('pending');
+        showNotification('🚫 کار رد شد.');
+      }
+    } catch (error) {
+      showNotification('⚠️ خطا');
+    }
+  });
+}
+
+async function sendMessage(serviceId) {
+  const input = document.getElementById(`chatInput-${serviceId}`);
+  if (!input) return;
+
+  const content = input.value.trim();
+  if (!content) return;
+
+  try {
+    await sendChatMessageApi(serviceId, content);
+    input.value = '';
+
+    // رفرش چت
+    const data = await loadChatMessages(serviceId);
+    const chatBox = document.getElementById(`chat-${serviceId}`);
+    if (chatBox) {
+      chatBox.innerHTML = renderChatMessages(data.messages);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  } catch (error) {
+    showNotification('⚠️ خطا در ارسال پیام');
+  }
+}
+
+async function handleFileUpload(event, serviceId) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    const result = await uploadFileApi(serviceId, file);
+
+    if (result.success) {
+      const job = servicesData.find(s => s.id === serviceId);
+      if (job) {
+        job.has_file = true;
+        job.result_file_name = file.name;
+      }
+
+      const uploadSection = document.getElementById(`uploadSection-${serviceId}`);
+      if (uploadSection) {
+        uploadSection.classList.add('has-file');
+        uploadSection.innerHTML = `
+          <div class="upload-icon">✅</div>
+          <div class="upload-text">فایل آپلود شده</div>
+          <div class="uploaded-file-name">
+            📎 ${file.name}
+            <button class="remove-file-btn" onclick="event.stopPropagation();removeFile('${serviceId}')">✕</button>
+          </div>
+          <input type="file" id="fileInput-${serviceId}" style="display:none;"
+                 accept=".pdf,.zip,.docx,.jpg,.jpeg,.png"
+                 onchange="handleFileUpload(event, '${serviceId}')">
+        `;
+      }
+
+      const completeBtn = document.getElementById(`completeBtn-${serviceId}`);
+      if (completeBtn) {
+        completeBtn.disabled = false;
+        completeBtn.textContent = '✅ تکمیل و تحویل کار';
+      }
+
+      showNotification(`📤 فایل "${file.name}" با موفقیت آپلود شد!`);
+    } else {
+      showNotification('⚠️ ' + (result.error || 'خطا در آپلود'));
+    }
+  } catch (error) {
+    showNotification('⚠️ خطا در آپلود فایل');
+  }
+}
+
+async function removeFile(serviceId) {
+  const job = servicesData.find(s => s.id === serviceId);
+  if (job) {
+    job.has_file = false;
+    job.result_file_name = null;
+  }
+
+  const uploadSection = document.getElementById(`uploadSection-${serviceId}`);
+  if (uploadSection) {
+    uploadSection.classList.remove('has-file');
+    uploadSection.innerHTML = `
+      <div class="upload-icon">📤</div>
+      <div class="upload-text">کلیک کنید یا فایل را بکشید</div>
+      <div class="upload-hint">PDF, ZIP, DOCX, JPG (حداکثر ۲۰ مگابایت)</div>
+      <input type="file" id="fileInput-${serviceId}" style="display:none;"
+             accept=".pdf,.zip,.docx,.jpg,.jpeg,.png"
+             onchange="handleFileUpload(event, '${serviceId}')">
+    `;
+  }
+
+  const completeBtn = document.getElementById(`completeBtn-${serviceId}`);
+  if (completeBtn) {
+    completeBtn.disabled = true;
+    completeBtn.textContent = '⚠️ ابتدا فایل را آپلود کنید';
+  }
+
+  showNotification('🗑️ فایل حذف شد.');
+}
+
+async function completeJob(serviceId) {
+  showConfirm('✅', 'تکمیل کار', 'آیا از تکمیل و تحویل این کار مطمئن هستید؟', async () => {
+    try {
+      const result = await completeJobApi(serviceId);
+      if (result.success) {
+        const job = servicesData.find(s => s.id === serviceId);
+        if (job) job.status = 'completed';
+        updateStats();
+        switchTab('completed');
+        showNotification('🎉 کار با موفقیت تکمیل و تحویل مشتری شد!');
+      } else {
+        showNotification('⚠️ ' + (result.error || 'خطا'));
+      }
+    } catch (error) {
+      showNotification('⚠️ خطا');
+    }
+  });
+}
+
+// ============================================
+// Event Listeners
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('confirmModalYes').addEventListener('click', () => {
+    if (confirmCallback) confirmCallback();
+    hideConfirm();
+  });
+
+  document.getElementById('confirmModalNo').addEventListener('click', hideConfirm);
+  document.getElementById('confirmModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('confirmModal')) hideConfirm();
+  });
+
+  document.getElementById('closeNotificationBtn').addEventListener('click', hideNotification);
+  document.getElementById('notificationModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('notificationModal')) hideNotification();
+  });
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      switchTab(this.dataset.tab);
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      hideConfirm();
+      hideNotification();
+    }
+  });
+
+  // لود اولیه
+  switchTab('pending');
+});
+
+// رفرش خودکار
+setInterval(() => {
+  if (currentTab === 'progress') {
+    document.querySelectorAll('[id^="chat-"]').forEach(async (el) => {
+      const serviceId = el.id.replace('chat-', '');
+      const data = await loadChatMessages(serviceId);
+      el.innerHTML = renderChatMessages(data.messages);
+      el.scrollTop = el.scrollHeight;
+    });
+  }
+}, 15000);
+</script>
+{% endblock %}

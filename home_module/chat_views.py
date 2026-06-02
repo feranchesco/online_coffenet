@@ -4,8 +4,6 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_GET
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
 import json
 
 from .models import Service, Operator
@@ -31,17 +29,10 @@ def has_chat_access(user, service):
     return False
 
 
-# ============================================
-# API های چت
-# ============================================
-
 @login_required
 @require_GET
 def get_messages(request, service_id):
-    """
-    دریافت پیام‌های چت
-    GET /api/chat/{service_id}/messages/?page=1
-    """
+    """دریافت پیام‌های چت"""
     service = get_object_or_404(Service, id=service_id)
 
     if not has_chat_access(request.user, service):
@@ -62,17 +53,12 @@ def get_messages(request, service_id):
 @login_required
 @require_POST
 def send_message(request, service_id):
-    """
-    ارسال پیام جدید
-    POST /api/chat/{service_id}/send/
-    Body: {"content": "متن پیام"}
-    """
+    """ارسال پیام جدید"""
     service = get_object_or_404(Service, id=service_id)
 
     if not has_chat_access(request.user, service):
         return JsonResponse({'error': 'دسترسی غیرمجاز'}, status=403)
 
-    # بررسی وضعیت سرویس
     if service.status in ['completed', 'delivered', 'cancelled']:
         return JsonResponse({'error': 'این سرویس به پایان رسیده'}, status=400)
 
@@ -107,10 +93,7 @@ def send_message(request, service_id):
 @login_required
 @require_POST
 def mark_as_read(request, service_id):
-    """
-    علامت‌گذاری پیام‌ها به عنوان خوانده شده
-    POST /api/chat/{service_id}/read/
-    """
+    """علامت‌گذاری پیام‌ها به عنوان خوانده شده"""
     service = get_object_or_404(Service, id=service_id)
 
     if not has_chat_access(request.user, service):
@@ -125,10 +108,7 @@ def mark_as_read(request, service_id):
 @login_required
 @require_GET
 def get_unread_count(request):
-    """
-    دریافت تعداد پیام‌های خوانده نشده همه چت‌ها
-    GET /api/chat/unread/
-    """
+    """دریافت تعداد پیام‌های خوانده نشده"""
     user = request.user
     user_type = get_user_type(user)
 
@@ -155,10 +135,7 @@ def get_unread_count(request):
 @login_required
 @require_GET
 def get_chat_list(request):
-    """
-    لیست چت‌های کاربر با آخرین پیام
-    GET /api/chat/list/
-    """
+    """لیست چت‌های کاربر"""
     user = request.user
     user_type = get_user_type(user)
 
@@ -183,10 +160,6 @@ def get_chat_list(request):
             'last_message_sender': last_msg['sender_name'] if last_msg else None,
         })
 
-    # مرتب‌سازی بر اساس آخرین پیام
-    chat_list.sort(
-        key=lambda x: x['last_message_time'] or '',
-        reverse=True
-    )
+    chat_list.sort(key=lambda x: x['last_message_time'] or '', reverse=True)
 
     return JsonResponse({'chats': chat_list})

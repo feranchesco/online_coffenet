@@ -2,7 +2,65 @@
 
 from django.contrib import admin
 from django.utils.safestring import mark_safe
-from .models import Operator, Service, Transaction
+from .models import Operator, Service, Transaction, HomeService
+
+
+# ============================================
+# HomeService Admin
+# ============================================
+@admin.register(HomeService)
+class HomeServiceAdmin(admin.ModelAdmin):
+    """پنل مدیریت خدمات صفحه اصلی"""
+
+    list_display = ['icon_display', 'title', 'price_display', 'is_active_icon',
+                    'order', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['title', 'description']
+    ordering = ['order', '-created_at']
+    list_editable = ['order']  # ✅ فقط order قابل ویرایش سریع
+
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('icon', 'title', 'description')
+        }),
+        ('قیمت‌گذاری', {
+            'fields': ('price',),
+            'description': 'اگر قیمت ۰ باشد، عبارت "تماس بگیرید" نمایش داده می‌شود'
+        }),
+        ('تنظیمات نمایش', {
+            'fields': ('is_active', 'order'),
+            'description': 'ترتیب کمتر = نمایش زودتر. غیرفعال = نمایش داده نشود'
+        }),
+    )
+
+    @admin.display(description='آیکون')
+    def icon_display(self, obj):
+        return f'{obj.icon} {obj.title}'
+
+    @admin.display(description='قیمت')
+    def price_display(self, obj):
+        if obj.price == 0:
+            return 'تماس بگیرید'
+        return f'{obj.price:,} تومان'
+
+    @admin.display(description='وضعیت')
+    def is_active_icon(self, obj):
+        if obj.is_active:
+            return mark_safe('<span style="color:#4ade80;">✅ فعال</span>')
+        return mark_safe('<span style="color:#ef4444;">❌ غیرفعال</span>')
+
+    # ✅ اکشن‌های گروهی
+    actions = ['make_active', 'make_inactive']
+
+    @admin.action(description='✅ فعال کردن خدمات انتخاب شده')
+    def make_active(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f'{updated} خدمت فعال شدند.')
+
+    @admin.action(description='❌ غیرفعال کردن خدمات انتخاب شده')
+    def make_inactive(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f'{updated} خدمت غیرفعال شدند.')
 
 
 # ============================================
@@ -85,7 +143,7 @@ class OperatorAdmin(admin.ModelAdmin):
 # ============================================
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    """پنل مدیریت خدمات"""
+    """پنل مدیریت خدمات/سفارشات"""
 
     list_display = ['tracking_code', 'title', 'customer_name', 'operator_name',
                     'price_display', 'status_badge', 'is_paid_icon', 'created_at']

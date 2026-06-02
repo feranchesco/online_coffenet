@@ -1,0 +1,106 @@
+<!-- templates/home_module/operator_login.html -->
+{% extends "shared/layout.html" %}
+{% load static %}
+
+{% block title %}ورود اپراتور | کافی نت آنلاین{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ... استایل‌ها مثل قبل ... */
+  .login-container {
+    max-width: 450px;
+    margin: 2rem auto;
+  }
+  .login-card {
+    background: rgba(22, 25, 42, 0.55);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2.5rem;
+    padding: 2rem;
+    box-shadow: 0 20px 35px -10px rgba(0,0,0,0.6);
+  }
+  .login-header { text-align: center; margin-bottom: 2rem; }
+  .login-icon { font-size: 3.5rem; display: block; margin-bottom: 0.5rem; }
+  .login-title { font-size: 1.5rem; font-weight: 700; color: #f3efff; }
+  .login-subtitle { font-size: 0.85rem; color: #b9c2e6; margin-top: 0.3rem; }
+  .login-form { display: flex; flex-direction: column; gap: 1.2rem; }
+  .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+  .input-label { font-weight: 600; font-size: 0.9rem; color: #cfc8ff; }
+  .input-field {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 2rem;
+    padding: 0.8rem 1.3rem;
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+    transition: 0.25s;
+    font-family: inherit;
+  }
+  .input-field:focus { border-color: #6366f1; box-shadow: 0 0 18px rgba(99, 102, 241, 0.5); }
+  .submit-btn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none; color: white; font-weight: 700; font-size: 1rem;
+    padding: 0.9rem; border-radius: 2.5rem; cursor: pointer; transition: 0.25s; margin-top: 0.5rem;
+  }
+  .submit-btn:hover { box-shadow: 0 8px 22px rgba(99, 102, 241, 0.5); }
+  .info-box {
+    background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 1.5rem; padding: 1rem; margin-top: 1.5rem;
+    font-size: 0.8rem; color: #fbbf24; text-align: center;
+  }
+  .back-link {
+    display: block; text-align: center; margin-top: 1.5rem;
+    color: #a78bfa; text-decoration: none; font-size: 0.9rem;
+  }
+  .messages { margin-bottom: 1rem; }
+  .alert { padding: 0.8rem 1rem; border-radius: 1.5rem; font-size: 0.85rem; text-align: center; margin-bottom: 0.5rem; }
+  .alert-error { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+  .alert-success { background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <span class="login-icon">🧑‍💻</span>
+      <h1 class="login-title">ورود اپراتور</h1>
+      <p class="login-subtitle">دسترسی به پنل مدیریت سفارشات</p>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ⚠️ مهم: action باید دقیقاً با name URL یکی باشد #}
+    <form class="login-form" method="POST" action="{% url 'operator_login' %}">
+      {% csrf_token %}
+
+      <div class="input-group">
+        <label class="input-label" for="phone">📱 شماره تلفن</label>
+        <input type="tel" class="input-field" id="phone" name="phone"
+               placeholder="09123456789" required autofocus>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="password">🔒 رمز عبور</label>
+        <input type="password" class="input-field" id="password" name="password"
+               placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="submit-btn">🚀 ورود به پنل اپراتور</button>
+    </form>
+
+    <div class="info-box">
+      💡 <strong>توجه:</strong> ثبت‌نام اپراتور فقط توسط مدیر سایت انجام می‌شود.
+    </div>
+
+    <a href="{% url 'home' %}" class="back-link">⬅️ بازگشت به صفحه اصلی</a>
+  </div>
+</div>
+{% endblock %}

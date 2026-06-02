@@ -1,184 +1,704 @@
-<section id="profilePage" style="display: none">
-    <!-- دکمه برگشت -->
-    <button class="back-btn" title="بازگشت">⬅️</button>
+{#<!-- templates/account_module/profile.html -->#}
+{#{% extends "shared/layout.html" %}#}
+{#{% load static %}#}
+{##}
+{#{% block title %}پنل کاربری | کافی نت آنلاین{% endblock %}#}
+{##}
+{#{% block extera_css %}#}
+{#    <link rel="stylesheet" href="{% static 'css/user_profile.css' %}">#}
+{#{% endblock %}#}
+{##}
+{#{% block content %}#}
+{#<!-- دکمه برگشت -->#}
+{#<a href="{% url 'home' %}" class="back-btn" title="بازگشت به خانه">⬅️</a>#}
+{##}
+{#<div class="main-container">#}
+{#    <!-- هدر پنل کاربری -->#}
+{#    <div class="panel-header">#}
+{#        <div class="user-avatar">👤</div>#}
+{#        <div class="user-info">#}
+{#            <div class="user-name">{{ customer.full_name }}</div>#}
+{#            <div class="user-phone">📱 {{ customer.phone }}</div>#}
+{#            <div class="user-status">🟢 حساب فعال</div>#}
+{#        </div>#}
+{#    </div>#}
+{##}
+{#    <!-- کیف پول -->#}
+{#    <div class="wallet-card">#}
+{#        <div class="wallet-info">#}
+{#            <div class="wallet-icon">💰</div>#}
+{#            <div>#}
+{#                <div class="wallet-balance" id="walletBalance">{{ customer.wallet_balance|default:0 }} تومان</div>#}
+{#                <div class="wallet-label">اعتبار کیف پول</div>#}
+{#            </div>#}
+{#        </div>#}
+{#        <button class="wallet-btn" onclick="showModal('💳 افزایش اعتبار (به زودی)', '💰')">➕ شارژ</button>#}
+{#    </div>#}
+{##}
+{#    <!-- تب‌ها -->#}
+{#    <div class="panel-tabs">#}
+{#        <button class="tab-btn active" data-tab="active">#}
+{#            📋 سفارشات فعال#}
+{#            <span class="tab-badge" id="activeBadge" style="display:none;">0</span>#}
+{#        </button>#}
+{#        <button class="tab-btn" data-tab="completed">#}
+{#            ✅ تکمیل شده#}
+{#        </button>#}
+{#        <button class="tab-btn" data-tab="history">#}
+{#            📜 تاریخچه#}
+{#        </button>#}
+{#    </div>#}
+{##}
+{#    <!-- محتوای تب‌ها -->#}
+{#    <div id="tabContent">#}
+{#        <div class="chat-loading">⏳ در حال بارگذاری...</div>#}
+{#    </div>#}
+{#</div>#}
+{##}
+{#<!-- مودال عمومی -->#}
+{#<div class="modal-overlay" id="modalOverlay">#}
+{#    <div class="modal-box">#}
+{#        <div style="font-size:2.5rem;" id="modalIcon">✨</div>#}
+{#        <p id="modalMessage">پیام</p>#}
+{#        <button class="close-modal" id="closeModalBtn">باشه</button>#}
+{#    </div>#}
+{#</div>#}
+{##}
+{#<!-- مودال پرداخت -->#}
+{#<div class="modal-overlay" id="paymentModal">#}
+{#    <div class="modal-box">#}
+{#        <div style="font-size:2.5rem;">💳</div>#}
+{#        <p id="paymentMessage"></p>#}
+{#        <div class="modal-buttons">#}
+{#            <button class="btn-confirm" id="confirmPaymentBtn">✅ پرداخت</button>#}
+{#            <button class="btn-cancel" id="cancelPaymentBtn">انصراف</button>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+{##}
+{#<!-- ✅ داده‌ها با json_script امن‌تر -->#}
+{#{{ services|json_script:"servicesData" }}#}
+{#{% endblock %}#}
+{##}
+{#{% block extra_js %}#}
+{#<script>#}
+{#// ============================================#}
+{#// ✅ دریافت داده از json_script#}
+{#// ============================================#}
+{#const servicesDataElement = document.getElementById('servicesData');#}
+{#const servicesData = servicesDataElement ? JSON.parse(servicesDataElement.textContent) : [];#}
+{##}
+{#console.log('🚀 پنل کاربری لود شد');#}
+{#console.log('📊 تعداد خدمات:', servicesData.length);#}
+{#console.log('📋 داده‌ها:', servicesData);#}
+{##}
+{#const csrfToken = '{{ csrf_token }}';#}
+{#const customerId = '{{ customer.id }}';#}
+{##}
+{#let currentTab = 'active';#}
+{#let currentPaymentServiceId = null;#}
+{##}
+{#// ============================================#}
+{#// توابع کمکی#}
+{#// ============================================#}
+{#function formatPrice(price) {#}
+{#    return Number(price || 0).toLocaleString('fa-IR');#}
+{#}#}
+{##}
+{#function escapeHtml(text) {#}
+{#    if (!text) return '';#}
+{#    const div = document.createElement('div');#}
+{#    div.textContent = text;#}
+{#    return div.innerHTML;#}
+{#}#}
+{##}
+{#function showModal(text, icon = '✨') {#}
+{#    const msg = document.getElementById('modalMessage');#}
+{#    const ico = document.getElementById('modalIcon');#}
+{#    const overlay = document.getElementById('modalOverlay');#}
+{#    if (msg) msg.textContent = text;#}
+{#    if (ico) ico.textContent = icon;#}
+{#    if (overlay) overlay.classList.add('active');#}
+{#}#}
+{##}
+{#function hideModal() {#}
+{#    const overlay = document.getElementById('modalOverlay');#}
+{#    if (overlay) overlay.classList.remove('active');#}
+{#}#}
+{##}
+{#function hidePaymentModal() {#}
+{#    const modal = document.getElementById('paymentModal');#}
+{#    if (modal) modal.classList.remove('active');#}
+{#    currentPaymentServiceId = null;#}
+{#}#}
+{##}
+{#function getStatusClass(status) {#}
+{#    const classes = {#}
+{#        'pending': 'status-pending',#}
+{#        'accepted': 'status-progress',#}
+{#        'in_progress': 'status-progress',#}
+{#        'completed': 'status-done',#}
+{#        'delivered': 'status-done',#}
+{#        'cancelled': 'status-cancelled',#}
+{#        'rejected': 'status-cancelled',#}
+{#    };#}
+{#    return classes[status] || 'status-pending';#}
+{#}#}
+{##}
+{#function getStatusIcon(status) {#}
+{#    const icons = {#}
+{#        'pending': '⏳',#}
+{#        'accepted': '✅',#}
+{#        'in_progress': '⚙️',#}
+{#        'completed': '🎉',#}
+{#        'delivered': '📦',#}
+{#        'cancelled': '❌',#}
+{#        'rejected': '🚫',#}
+{#    };#}
+{#    return icons[status] || '📋';#}
+{#}#}
+{##}
+{#function formatTime(timestamp) {#}
+{#    if (!timestamp) return '';#}
+{#    const date = new Date(timestamp);#}
+{#    const now = new Date();#}
+{#    const diff = now - date;#}
+{#    if (diff < 60000) return 'همین الان';#}
+{#    if (diff < 3600000) return Math.floor(diff / 60000) + ' دقیقه پیش';#}
+{#    if (diff < 86400000) return Math.floor(diff / 3600000) + ' ساعت پیش';#}
+{#    return date.toLocaleDateString('fa-IR', { month: 'long', day: 'numeric' });#}
+{#}#}
+{##}
+{#// ============================================#}
+{#// API Calls#}
+{#// ============================================#}
+{#async function apiCall(url, options = {}) {#}
+{#    const defaultHeaders = {#}
+{#        'X-CSRFToken': csrfToken,#}
+{#        'Content-Type': 'application/json',#}
+{#    };#}
+{##}
+{#    const response = await fetch(url, {#}
+{#        ...options,#}
+{#        headers: { ...defaultHeaders, ...(options.headers || {}) }#}
+{#    });#}
+{##}
+{#    const data = await response.json();#}
+{##}
+{#    if (!response.ok) {#}
+{#        throw new Error(data.error || 'خطای ناشناخته');#}
+{#    }#}
+{##}
+{#    return data;#}
+{#}#}
+{##}
+{#async function loadChatMessages(serviceId, page = 1) {#}
+{#    try {#}
+{#        return await apiCall(`/api/chat/${serviceId}/messages/?page=${page}`);#}
+{#    } catch {#}
+{#        return { messages: [], has_more: false, unread_count: 0 };#}
+{#    }#}
+{#}#}
+{##}
+{#async function sendChatMessage(serviceId, content) {#}
+{#    return await apiCall(`/api/chat/${serviceId}/send/`, {#}
+{#        method: 'POST',#}
+{#        body: JSON.stringify({ content })#}
+{#    });#}
+{#}#}
+{##}
+{#async function payServiceApi(serviceId) {#}
+{#    return await apiCall(`/api/service/${serviceId}/pay/`, {#}
+{#        method: 'POST'#}
+{#    });#}
+{#}#}
+{##}
+{#// ============================================#}
+{#// رندر چت#}
+{#// ============================================#}
+{#function renderChatMessages(messages) {#}
+{#    if (!messages || messages.length === 0) {#}
+{#        return '<div style="text-align:center;color:#b9c2e6;font-size:0.8rem;padding:0.5rem;">هنوز پیامی ارسال نشده</div>';#}
+{#    }#}
+{##}
+{#    return messages.map(msg => {#}
+{#        const isMine = msg.sender_id === customerId || msg.sender_type === 'customer';#}
+{#        return `#}
+{#            <div class="chat-msg ${isMine ? 'chat-user' : 'chat-operator'}">#}
+{#                <div>${escapeHtml(msg.content)}</div>#}
+{#                <div class="chat-time">${formatTime(msg.timestamp)}</div>#}
+{#            </div>#}
+{#        `;#}
+{#    }).join('');#}
+{#}#}
+{##}
+{#// ============================================#}
+{#// رندر تب‌ها#}
+{#// ============================================#}
+{#function renderActiveOrders() {#}
+{#    console.log('🔄 renderActiveOrders');#}
+{##}
+{#    const activeServices = servicesData.filter(s =>#}
+{#        ['pending', 'accepted', 'in_progress'].includes(s.status)#}
+{#    );#}
+{##}
+{#    console.log('📊 فعال:', activeServices.length);#}
+{##}
+{#    // بروزرسانی badge#}
+{#    const badge = document.getElementById('activeBadge');#}
+{#    if (badge) {#}
+{#        badge.textContent = activeServices.length;#}
+{#        badge.style.display = activeServices.length > 0 ? 'block' : 'none';#}
+{#    }#}
+{##}
+{#    const tabContent = document.getElementById('tabContent');#}
+{##}
+{#    if (activeServices.length === 0) {#}
+{#        tabContent.innerHTML = `#}
+{#            <div class="empty-state">#}
+{#                <div class="empty-icon">📭</div>#}
+{#                <p>هیچ سفارش فعالی ندارید</p>#}
+{#                <p style="font-size:0.8rem;color:#b9c2e6;">کل خدمات ثبت شده: ${servicesData.length}</p>#}
+{#                <a href="/" class="refresh-btn">➕ ایجاد سفارش جدید</a>#}
+{#            </div>#}
+{#        `;#}
+{#        return;#}
+{#    }#}
+{##}
+{#    let html = '';#}
+{##}
+{#    activeServices.forEach(service => {#}
+{#        const hasOperator = service.operator_name && service.status !== 'pending';#}
+{##}
+{#        html += `#}
+{#            <div class="order-card">#}
+{#                <div class="order-header">#}
+{#                    <div class="order-icon">${getStatusIcon(service.status)}</div>#}
+{#                    <div class="order-info">#}
+{#                        <div class="order-title">${escapeHtml(service.title)}</div>#}
+{#                        <div class="order-desc">${escapeHtml(service.description || '')}</div>#}
+{#                        <div class="order-tracking">کد پیگیری: ${service.tracking_code}</div>#}
+{#                    </div>#}
+{#                    <span class="order-status ${getStatusClass(service.status)}">${service.status_display}</span>#}
+{#                </div>#}
+{##}
+{#                <div class="operator-info">#}
+{#                    <div class="operator-avatar">${hasOperator ? '🧑‍💻' : '⏳'}</div>#}
+{#                    <div>#}
+{#                        <div class="operator-name">${hasOperator ? escapeHtml(service.operator_name) : 'در انتظار پذیرش اپراتور'}</div>#}
+{#                        ${service.operator_role ? `<div class="operator-role">${escapeHtml(service.operator_role)}</div>` : ''}#}
+{#                    </div>#}
+{#                </div>#}
+{##}
+{#                ${service.status !== 'pending' ? `#}
+{#                    <div class="chat-section" id="chatMessages-${service.id}">#}
+{#                        <div style="text-align:center;color:#b9c2e6;">💬</div>#}
+{#                    </div>#}
+{#                    <div class="chat-input-row">#}
+{#                        <input type="text" class="chat-input" id="chatInput-${service.id}"#}
+{#                               placeholder="پیام خود را بنویسید..."#}
+{#                               onkeypress="if(event.key==='Enter') sendMessage('${service.id}')">#}
+{#                        <button class="chat-send-btn" onclick="sendMessage('${service.id}')">📨 ارسال</button>#}
+{#                    </div>#}
+{#                ` : `#}
+{#                    <div style="text-align:center;color:#b9c2e6;font-size:0.8rem;padding:0.5rem;">#}
+{#                        💬 چت پس از پذیرش سفارش فعال می‌شود#}
+{#                    </div>#}
+{#                `}#}
+{##}
+{#                <div class="order-actions">#}
+{#                    <span class="price-tag">💲 ${formatPrice(service.final_price)} تومان</span>#}
+{#                    ${service.is_paid ? `#}
+{#                        <button class="pay-btn paid">✅ پرداخت شده</button>#}
+{#                    ` : `#}
+{#                        <button class="pay-btn" onclick="showPayment('${service.id}', ${service.final_price})">💳 پرداخت</button>#}
+{#                    `}#}
+{#                    ${service.has_file && service.is_paid ? `#}
+{#                        <a href="/api/service/${service.id}/download/" class="download-btn">📥 دانلود نتیجه</a>#}
+{#                    ` : `#}
+{#                        <button class="download-btn" disabled>📥 ${service.is_paid ? 'منتظر فایل' : 'پرداخت نشده'}</button>#}
+{#                    `}#}
+{#                </div>#}
+{#            </div>#}
+{#        `;#}
+{#    });#}
+{##}
+{#    tabContent.innerHTML = html;#}
+{#    console.log('✅ رندر تموم شد');#}
+{##}
+{#    // بارگذاری چت‌ها#}
+{#    setTimeout(() => {#}
+{#        activeServices.forEach(async (service) => {#}
+{#            if (service.status !== 'pending') {#}
+{#                await refreshChat(service.id);#}
+{#            }#}
+{#        });#}
+{#    }, 300);#}
+{#}#}
+{##}
+{#function renderCompletedOrders() {#}
+{#    const completedServices = servicesData.filter(s =>#}
+{#        ['completed', 'delivered'].includes(s.status)#}
+{#    );#}
+{##}
+{#    if (completedServices.length === 0) {#}
+{#        document.getElementById('tabContent').innerHTML = `#}
+{#            <div class="empty-state">#}
+{#                <div class="empty-icon">📭</div>#}
+{#                <p>سفارش تکمیل شده‌ای ندارید</p>#}
+{#            </div>#}
+{#        `;#}
+{#        return;#}
+{#    }#}
+{##}
+{#    let html = '';#}
+{##}
+{#    completedServices.forEach(service => {#}
+{#        html += `#}
+{#            <div class="order-card">#}
+{#                <div class="order-header">#}
+{#                    <div class="order-icon">${getStatusIcon(service.status)}</div>#}
+{#                    <div class="order-info">#}
+{#                        <div class="order-title">${escapeHtml(service.title)}</div>#}
+{#                        <div class="order-desc">${escapeHtml(service.description || '')}</div>#}
+{#                        <div class="order-tracking">کد پیگیری: ${service.tracking_code}</div>#}
+{#                    </div>#}
+{#                    <span class="order-status ${getStatusClass(service.status)}">${service.status_display}</span>#}
+{#                </div>#}
+{##}
+{#                <div class="operator-info">#}
+{#                    <div class="operator-avatar">🧑‍💻</div>#}
+{#                    <div>#}
+{#                        <div class="operator-name">${escapeHtml(service.operator_name || 'نامشخص')}</div>#}
+{#                        ${service.operator_role ? `<div class="operator-role">${escapeHtml(service.operator_role)}</div>` : ''}#}
+{#                    </div>#}
+{#                </div>#}
+{##}
+{#                <div class="order-actions">#}
+{#                    <span class="price-tag">💲 ${formatPrice(service.final_price)} تومان</span>#}
+{#                    ${service.is_paid ? `#}
+{#                        <button class="pay-btn paid">✅ پرداخت شده</button>#}
+{#                        ${service.has_file ? `<a href="/api/service/${service.id}/download/" class="download-btn">📥 دانلود</a>` : ''}#}
+{#                    ` : `#}
+{#                        <button class="pay-btn" onclick="showPayment('${service.id}', ${service.final_price})">💳 پرداخت</button>#}
+{#                    `}#}
+{#                </div>#}
+{#            </div>#}
+{#        `;#}
+{#    });#}
+{##}
+{#    document.getElementById('tabContent').innerHTML = html;#}
+{#}#}
+{##}
+{#function renderHistory() {#}
+{#    const historyServices = servicesData.filter(s =>#}
+{#        ['delivered', 'cancelled', 'rejected'].includes(s.status)#}
+{#    );#}
+{##}
+{#    if (historyServices.length === 0) {#}
+{#        document.getElementById('tabContent').innerHTML = `#}
+{#            <div class="empty-state">#}
+{#                <div class="empty-icon">📜</div>#}
+{#                <p>تاریخچه‌ای یافت نشد</p>#}
+{#            </div>#}
+{#        `;#}
+{#        return;#}
+{#    }#}
+{##}
+{#    document.getElementById('tabContent').innerHTML = historyServices.map(service => `#}
+{#        <div class="history-card">#}
+{#            <div class="history-icon">${getStatusIcon(service.status)}</div>#}
+{#            <div class="history-details">#}
+{#                <div class="history-title">${escapeHtml(service.title)}</div>#}
+{#                <div class="history-date">📅 ${service.status_display} | ${service.tracking_code}</div>#}
+{#            </div>#}
+{#            <div class="history-price">${formatPrice(service.final_price)} تومان</div>#}
+{#        </div>#}
+{#    `).join('');#}
+{#}#}
+{##}
+{#function switchTab(tab) {#}
+{#    currentTab = tab;#}
+{##}
+{#    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));#}
+{#    const btn = document.querySelector(`[data-tab="${tab}"]`);#}
+{#    if (btn) btn.classList.add('active');#}
+{##}
+{#    document.getElementById('tabContent').innerHTML = '<div class="chat-loading">⏳ در حال بارگذاری...</div>';#}
+{##}
+{#    if (tab === 'active') renderActiveOrders();#}
+{#    else if (tab === 'completed') renderCompletedOrders();#}
+{#    else if (tab === 'history') renderHistory();#}
+{#}#}
+{##}
+{#// ============================================#}
+{#// چت#}
+{#// ============================================#}
+{#async function sendMessage(serviceId) {#}
+{#    const input = document.getElementById(`chatInput-${serviceId}`);#}
+{#    if (!input) return;#}
+{##}
+{#    const content = input.value.trim();#}
+{#    if (!content) return;#}
+{##}
+{#    input.disabled = true;#}
+{##}
+{#    try {#}
+{#        const result = await sendChatMessage(serviceId, content);#}
+{#        if (result.success) {#}
+{#            input.value = '';#}
+{#            await refreshChat(serviceId);#}
+{#        }#}
+{#    } catch (error) {#}
+{#        console.error(error);#}
+{#    } finally {#}
+{#        input.disabled = false;#}
+{#        input.focus();#}
+{#    }#}
+{#}#}
+{##}
+{#async function refreshChat(serviceId) {#}
+{#    const container = document.getElementById(`chatMessages-${serviceId}`);#}
+{#    if (!container) return;#}
+{##}
+{#    try {#}
+{#        const data = await loadChatMessages(serviceId);#}
+{#        container.innerHTML = renderChatMessages(data.messages);#}
+{#        container.scrollTop = container.scrollHeight;#}
+{#    } catch (error) {#}
+{#        console.error(error);#}
+{#    }#}
+{#}#}
+{##}
+{#// ============================================#}
+{#// پرداخت#}
+{#// ============================================#}
+{#function showPayment(serviceId, price) {#}
+{#    currentPaymentServiceId = serviceId;#}
+{#    document.getElementById('paymentMessage').textContent =#}
+{#        `پرداخت مبلغ ${formatPrice(price)} تومان برای این سفارش؟`;#}
+{#    document.getElementById('paymentModal').classList.add('active');#}
+{#}#}
+{##}
+{#async function confirmPayment() {#}
+{#    if (!currentPaymentServiceId) return;#}
+{##}
+{#    try {#}
+{#        const result = await payServiceApi(currentPaymentServiceId);#}
+{##}
+{#        if (result.success) {#}
+{#            document.getElementById('walletBalance').textContent =#}
+{#                formatPrice(result.new_balance) + ' تومان';#}
+{##}
+{#            const service = servicesData.find(s => s.id === currentPaymentServiceId);#}
+{#            if (service) service.is_paid = true;#}
+{##}
+{#            showModal('✅ پرداخت با موفقیت انجام شد!', '💳');#}
+{#            hidePaymentModal();#}
+{#            switchTab(currentTab);#}
+{#        } else {#}
+{#            showModal('⚠️ ' + (result.error || 'خطا'), '❌');#}
+{#        }#}
+{#    } catch (error) {#}
+{#        showModal('⚠️ خطا در پرداخت', '❌');#}
+{#    }#}
+{#}#}
+{##}
+{#// ============================================#}
+{#// Event Listeners#}
+{#// ============================================#}
+{#document.getElementById('closeModalBtn')?.addEventListener('click', hideModal);#}
+{#document.getElementById('modalOverlay')?.addEventListener('click', (e) => {#}
+{#    if (e.target === e.currentTarget) hideModal();#}
+{#});#}
+{##}
+{#document.getElementById('confirmPaymentBtn')?.addEventListener('click', confirmPayment);#}
+{#document.getElementById('cancelPaymentBtn')?.addEventListener('click', hidePaymentModal);#}
+{#document.getElementById('paymentModal')?.addEventListener('click', (e) => {#}
+{#    if (e.target === e.currentTarget) hidePaymentModal();#}
+{#});#}
+{##}
+{#document.querySelectorAll('.tab-btn').forEach(btn => {#}
+{#    btn.addEventListener('click', () => switchTab(btn.dataset.tab));#}
+{#});#}
+{##}
+{#document.addEventListener('keydown', (e) => {#}
+{#    if (e.key === 'Escape') {#}
+{#        hideModal();#}
+{#        hidePaymentModal();#}
+{#    }#}
+{#});#}
+{##}
+{#// ============================================#}
+{#// ✅ شروع - اجرای فوری#}
+{#// ============================================#}
+{#(function start() {#}
+{#    console.log('🚀 شروع رندر...');#}
+{#    console.log('📊 خدمات:', servicesData);#}
+{##}
+{#    // badge اولیه#}
+{#    const activeCount = servicesData.filter(s =>#}
+{#        ['pending', 'accepted', 'in_progress'].includes(s.status)#}
+{#    ).length;#}
+{##}
+{#    const badge = document.getElementById('activeBadge');#}
+{#    if (badge && activeCount > 0) {#}
+{#        badge.textContent = activeCount;#}
+{#        badge.style.display = 'block';#}
+{#    }#}
+{##}
+{#    // رندر#}
+{#    renderActiveOrders();#}
+{##}
+{#    // رفرش چت هر ۱۵ ثانیه#}
+{#    setInterval(() => {#}
+{#        if (currentTab === 'active') {#}
+{#            document.querySelectorAll('[id^="chatMessages-"]').forEach(async (el) => {#}
+{#                await refreshChat(el.id.replace('chatMessages-', ''));#}
+{#            });#}
+{#        }#}
+{#    }, 15000);#}
+{#})();#}
+{#</script>#}
+{#{% endblock %}#}
+<!-- templates/account_module/profile.html -->
+{% extends "shared/layout.html" %}
+{% load static %}
 
-  <div class="main-container">
+{% block title %}پنل کاربری | کافی نت آنلاین{% endblock %}
+
+{% block extera_css %}
+    <link rel="stylesheet" href="{% static 'css/user_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- دکمه برگشت -->
+<a href="{% url 'home' %}" class="back-btn" title="بازگشت به خانه">⬅️</a>
+
+<div class="main-container">
     <!-- هدر پنل کاربری -->
     <div class="panel-header">
-      <div class="user-avatar">👤</div>
-      <div class="user-info">
-        <div class="user-name">{{ customer.full_name }}</div>
-        <div class="user-phone">📱 {{ customer.phone }}</div>
-        <div class="user-status">🟢 حساب فعال</div>
-      </div>
+        <div class="user-avatar">👤</div>
+        <div class="user-info">
+            <div class="user-name">{{ customer.full_name }}</div>
+            <div class="user-phone">📱 {{ customer.phone }}</div>
+            <div class="user-status">🟢 حساب فعال</div>
+        </div>
     </div>
 
     <!-- کیف پول -->
     <div class="wallet-card">
-      <div class="wallet-info">
-        <div class="wallet-icon">💰</div>
-        <div>
-          <div class="wallet-balance" id="walletBalance">{{ customer.wallet_balance }} تومان</div>
-          <div class="wallet-label">اعتبار کیف پول</div>
+        <div class="wallet-info">
+            <div class="wallet-icon">💰</div>
+            <div>
+                <div class="wallet-balance" id="walletBalance">{{ customer.wallet_balance|default:0 }} تومان</div>
+                <div class="wallet-label">اعتبار کیف پول</div>
+            </div>
         </div>
-      </div>
-      <button class="wallet-btn" onclick="showModal('💳 افزایش اعتبار (به زودی)', '💰')">➕ شارژ</button>
+        <button class="wallet-btn" onclick="showModal('💳 افزایش اعتبار (به زودی)', '💰')">➕ شارژ</button>
     </div>
 
     <!-- تب‌ها -->
     <div class="panel-tabs">
-      <button class="tab-btn active" data-tab="active">
-        📋 سفارشات فعال
-        <span class="tab-badge" id="activeBadge">0</span>
-      </button>
-      <button class="tab-btn" data-tab="completed">
-        ✅ تکمیل شده
-      </button>
-      <button class="tab-btn" data-tab="history">
-        📜 تاریخچه
-      </button>
+        <button class="tab-btn active" onclick="switchTab('active')">
+            📋 سفارشات فعال
+            <span class="tab-badge" id="activeBadge" style="display:none;">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('completed')">
+            ✅ تکمیل شده
+        </button>
+        <button class="tab-btn" onclick="switchTab('history')">
+            📜 تاریخچه
+        </button>
     </div>
 
     <!-- محتوای تب‌ها -->
     <div id="tabContent">
-      <div class="chat-loading">⏳ در حال بارگذاری...</div>
+        <div class="chat-loading">⏳ در حال بارگذاری...</div>
     </div>
-  </div>
+</div>
 
+<!-- مودال عمومی -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <div style="font-size:2.5rem;" id="modalIcon">✨</div>
+        <p id="modalMessage">پیام</p>
+        <button class="close-modal" onclick="hideModal()">باشه</button>
+    </div>
+</div>
 
-    <!-- مودال -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-box">
-            <div style="font-size:2.5rem;" id="modalIcon">✨</div>
-            <p id="modalMessage">پیام</p>
-            <button class="close-modal" id="closeModalBtn">باشه</button>
+<!-- مودال پرداخت -->
+<div class="modal-overlay" id="paymentModal">
+    <div class="modal-box">
+        <div style="font-size:2.5rem;">💳</div>
+        <p id="paymentMessage"></p>
+        <div class="modal-buttons">
+            <button class="btn-confirm" id="confirmPaymentBtn">✅ پرداخت</button>
+            <button class="btn-cancel" onclick="hidePaymentModal()">انصراف</button>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <!-- مودال پرداخت -->
-    <div class="modal-overlay" id="paymentModal">
-    <div class="modal-box">
-      <div style="font-size:2.5rem;">💳</div>
-      <p id="paymentMessage"></p>
-      <div class="modal-buttons">
-        <button class="btn-confirm" id="confirmPaymentBtn">✅ پرداخت</button>
-        <button class="btn-cancel" id="cancelPaymentBtn">انصراف</button>
-      </div>
-    </div>
-  </div>
-</section>
-
+{% block extra_js %}
 <script>
-    // ============================================
-    // داده‌های اولیه از سرور
-    // ============================================
-    const servicesData = {{ services|safe }};
-    const csrfToken = '{{ csrf_token }}';
-    const customerId = '{{ customer.id }}';
+// ============================================
+// داده‌ها از سرور
+// ============================================
+const SERVICES_JSON = '{{ services|escapejs }}';
+let servicesData = [];
 
-    // ============================================
-    // متغیرهای گلوبال
-    // ============================================
-    let currentTab = 'active';
-    let currentPaymentServiceId = null;
-    let chatIntervals = {};
+try {
+    servicesData = JSON.parse(SERVICES_JSON);
+    console.log('📊 خدمات بارگذاری شد:', servicesData.length, 'مورد');
+} catch(e) {
+    console.error('خطا در بارگذاری خدمات:', e);
+    servicesData = [];
+}
 
-    // ============================================
-    // توابع مودال
-    // ============================================
-    function showModal(text, icon = '✨') {
-      document.getElementById('modalMessage').textContent = text;
-      document.getElementById('modalIcon').textContent = icon;
-      document.getElementById('modalOverlay').classList.add('active');
-    }
+const csrfToken = '{{ csrf_token }}';
+const customerId = '{{ customer.id }}';
+let currentTab = 'active';
+let currentPaymentServiceId = null;
 
-    function hideModal() {
-      document.getElementById('modalOverlay').classList.remove('active');
-    }
+// ============================================
+// توابع کمکی
+// ============================================
+function formatPrice(price) {
+    return Number(price || 0).toLocaleString('fa-IR');
+}
 
-    function showPaymentModal(serviceId, price) {
-      currentPaymentServiceId = serviceId;
-      document.getElementById('paymentMessage').textContent =
-        `پرداخت مبلغ ${Number(price).toLocaleString('fa-IR')} تومان برای این سفارش؟`;
-      document.getElementById('paymentModal').classList.add('active');
-    }
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
-    function hidePaymentModal() {
-      document.getElementById('paymentModal').classList.remove('active');
-      currentPaymentServiceId = null;
-    }
+function showModal(text, icon = '✨') {
+    document.getElementById('modalMessage').textContent = text;
+    document.getElementById('modalIcon').textContent = icon;
+    document.getElementById('modalOverlay').classList.add('active');
+}
 
-    // ============================================
-    // توابع API
-    // ============================================
-    async function apiCall(url, options = {}) {
-      try {
-        const defaultOptions = {
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'Content-Type': 'application/json',
-          }
-        };
-        const mergedOptions = { ...defaultOptions, ...options };
-        if (mergedOptions.headers) {
-          mergedOptions.headers = { ...defaultOptions.headers, ...options.headers };
-        }
+function hideModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+}
 
-        const response = await fetch(url, mergedOptions);
-        const data = await response.json();
+function showPaymentModal(serviceId, price) {
+    currentPaymentServiceId = serviceId;
+    document.getElementById('paymentMessage').textContent =
+        `پرداخت مبلغ ${formatPrice(price)} تومان برای این سفارش؟`;
+    document.getElementById('paymentModal').classList.add('active');
+}
 
-        if (!response.ok) {
-          throw new Error(data.error || 'خطای ناشناخته');
-        }
+function hidePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('active');
+    currentPaymentServiceId = null;
+}
 
-        return data;
-      } catch (error) {
-        console.error('API Error:', error);
-        throw error;
-      }
-    }
-
-    async function loadChatMessages(serviceId, page = 1) {
-      try {
-        const data = await apiCall(`/api/chat/${serviceId}/messages/?page=${page}`);
-        return data;
-      } catch (error) {
-        return { messages: [], has_more: false, unread_count: 0 };
-      }
-    }
-
-    async function sendChatMessage(serviceId, content) {
-      return await apiCall(`/api/chat/${serviceId}/send/`, {
-        method: 'POST',
-        body: JSON.stringify({ content })
-      });
-    }
-
-    async function markChatAsRead(serviceId) {
-      try {
-        await apiCall(`/api/chat/${serviceId}/read/`, { method: 'POST' });
-      } catch (error) {
-        // بی‌صدا خطا رو نادیده میگیریم
-      }
-    }
-
-    async function payService(serviceId) {
-      try {
-        const data = await apiCall(`/api/service/${serviceId}/pay/`, {
-          method: 'POST'
-        });
-        return data;
-      } catch (error) {
-        showModal('⚠️ ' + error.message, '❌');
-        return { success: false };
-      }
-    }
-
-    // ============================================
-    // رندر کارت‌ها
-    // ============================================
-    function getStatusClass(status) {
-      const classes = {
+function getStatusClass(status) {
+    const classes = {
         'pending': 'status-pending',
         'accepted': 'status-progress',
         'in_progress': 'status-progress',
@@ -186,401 +706,411 @@
         'delivered': 'status-done',
         'cancelled': 'status-cancelled',
         'rejected': 'status-cancelled',
-      };
-      return classes[status] || 'status-pending';
+    };
+    return classes[status] || 'status-pending';
+}
+
+function getStatusIcon(status) {
+    const icons = {
+        'pending': '⏳', 'accepted': '✅', 'in_progress': '⚙️',
+        'completed': '🎉', 'delivered': '📦', 'cancelled': '❌', 'rejected': '🚫',
+    };
+    return icons[status] || '📋';
+}
+
+function formatTime(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    if (diff < 60000) return 'همین الان';
+    if (diff < 3600000) return Math.floor(diff / 60000) + ' دقیقه پیش';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + ' ساعت پیش';
+    return date.toLocaleDateString('fa-IR', { month: 'long', day: 'numeric' });
+}
+
+// ============================================
+// API Calls
+// ============================================
+async function apiCall(url, options = {}) {
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+            ...(options.headers || {})
+        }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'خطا');
+    return data;
+}
+
+async function loadChatMessages(serviceId) {
+    try {
+        return await apiCall(`/api/chat/${serviceId}/messages/`);
+    } catch {
+        return { messages: [] };
     }
+}
 
-    function getStatusIcon(status) {
-      const icons = {
-        'pending': '⏳',
-        'accepted': '✅',
-        'in_progress': '⚙️',
-        'completed': '🎉',
-        'delivered': '📦',
-        'cancelled': '❌',
-        'rejected': '🚫',
-      };
-      return icons[status] || '❓';
-    }
+async function sendChatMessage(serviceId, content) {
+    return await apiCall(`/api/chat/${serviceId}/send/`, {
+        method: 'POST',
+        body: JSON.stringify({ content })
+    });
+}
 
-    function formatTime(timestamp) {
-      if (!timestamp) return '';
-      const date = new Date(timestamp);
-      const now = new Date();
-      const diff = now - date;
+async function payServiceApi(serviceId) {
+    return await apiCall(`/api/service/${serviceId}/pay/`, {
+        method: 'POST'
+    });
+}
 
-      if (diff < 60000) return 'همین الان';
-      if (diff < 3600000) return Math.floor(diff / 60000) + ' دقیقه پیش';
-      if (diff < 86400000) return Math.floor(diff / 3600000) + ' ساعت پیش';
-
-      return date.toLocaleDateString('fa-IR', {
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
-
-    function renderChatMessages(serviceId, messages) {
-      if (!messages || messages.length === 0) {
+// ============================================
+// رندر چت
+// ============================================
+function renderChatMessages(messages) {
+    if (!messages || messages.length === 0) {
         return '<div style="text-align:center;color:#b9c2e6;font-size:0.8rem;padding:0.5rem;">هنوز پیامی ارسال نشده</div>';
-      }
+    }
 
-      return messages.map(msg => {
+    return messages.map(msg => {
         const isMine = msg.sender_id === customerId || msg.sender_type === 'customer';
-        const msgClass = isMine ? 'chat-user' : 'chat-operator';
         return `
-          <div class="chat-msg ${msgClass}">
-            <div>${escapeHtml(msg.content)}</div>
-            <div class="chat-time">${formatTime(msg.timestamp)}</div>
-          </div>
+            <div class="chat-msg ${isMine ? 'chat-user' : 'chat-operator'}">
+                <div>${escapeHtml(msg.content)}</div>
+                <div class="chat-time">${formatTime(msg.timestamp)}</div>
+            </div>
         `;
-      }).join('');
-    }
+    }).join('');
+}
 
-    function escapeHtml(text) {
-      if (!text) return '';
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    // ============================================
-    // رندر تب‌ها
-    // ============================================
-    async function renderActiveOrders() {
-      const activeServices = servicesData.filter(s =>
+// ============================================
+// رندر تب‌ها
+// ============================================
+async function renderActiveOrders() {
+    const activeServices = servicesData.filter(s =>
         ['pending', 'accepted', 'in_progress'].includes(s.status)
-      );
+    );
 
-      document.getElementById('activeBadge').textContent = activeServices.length;
-      document.getElementById('activeBadge').style.display = activeServices.length > 0 ? 'block' : 'none';
+    // بروزرسانی badge
+    const badge = document.getElementById('activeBadge');
+    if (badge) {
+        badge.textContent = activeServices.length;
+        badge.style.display = activeServices.length > 0 ? 'block' : 'none';
+    }
 
-      if (activeServices.length === 0) {
-        document.getElementById('tabContent').innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <p>هیچ سفارش فعالی ندارید</p>
-            <a href="/" class="refresh-btn">➕ ایجاد سفارش جدید</a>
-          </div>
+    const tabContent = document.getElementById('tabContent');
+
+    if (activeServices.length === 0) {
+        tabContent.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <p>هیچ سفارش فعالی ندارید</p>
+                <p style="font-size:0.8rem;color:#b9c2e6;">کل خدمات ثبت شده: ${servicesData.length}</p>
+                <a href="/" class="refresh-btn">➕ ایجاد سفارش جدید</a>
+            </div>
         `;
         return;
-      }
+    }
 
-      let html = '';
+    let html = '';
 
-      for (const service of activeServices) {
-        // بارگذاری پیام‌های چت
-        let chatData = { messages: [], has_more: false, unread_count: 0 };
+    for (const service of activeServices) {
+        let chatData = { messages: [] };
         if (service.status !== 'pending') {
-          chatData = await loadChatMessages(service.id);
+            try {
+                chatData = await loadChatMessages(service.id);
+            } catch(e) {}
         }
 
-        const chatMessages = renderChatMessages(service.id, chatData.messages);
         const hasOperator = service.operator_name && service.status !== 'pending';
 
         html += `
-          <div class="order-card" id="service-${service.id}">
-            <div class="order-header">
-              <div class="order-icon">${getStatusIcon(service.status)}</div>
-              <div class="order-info">
-                <div class="order-title">${escapeHtml(service.title)}</div>
-                <div class="order-desc">${escapeHtml(service.description || '')}</div>
-                <div class="order-tracking">کد پیگیری: ${service.tracking_code}</div>
-              </div>
-              <span class="order-status ${getStatusClass(service.status)}">${service.status_display}</span>
-            </div>
-
-            ${hasOperator ? `
-              <div class="operator-info">
-                <div class="operator-avatar">🧑‍💻</div>
-                <div>
-                  <div class="operator-name">${escapeHtml(service.operator_name)}</div>
-                  ${service.operator_role ? `<div class="operator-role">${escapeHtml(service.operator_role)}</div>` : ''}
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-icon">${getStatusIcon(service.status)}</div>
+                    <div class="order-info">
+                        <div class="order-title">${escapeHtml(service.title)}</div>
+                        <div class="order-desc">${escapeHtml(service.description || '')}</div>
+                        <div class="order-tracking">کد پیگیری: ${service.tracking_code}</div>
+                    </div>
+                    <span class="order-status ${getStatusClass(service.status)}">${service.status_display}</span>
                 </div>
-              </div>
-            ` : `
-              <div class="operator-info">
-                <div class="operator-avatar">⏳</div>
-                <div>
-                  <div class="operator-name">در انتظار پذیرش اپراتور</div>
+
+                <div class="operator-info">
+                    <div class="operator-avatar">${hasOperator ? '🧑‍💻' : '⏳'}</div>
+                    <div>
+                        <div class="operator-name">${hasOperator ? escapeHtml(service.operator_name) : 'در انتظار پذیرش اپراتور'}</div>
+                        ${service.operator_role ? `<div class="operator-role">${escapeHtml(service.operator_role)}</div>` : ''}
+                    </div>
                 </div>
-              </div>
-            `}
 
-            ${service.status !== 'pending' ? `
-              <div class="chat-section" id="chatMessages-${service.id}">
-                ${chatMessages}
-              </div>
-              <div class="chat-input-row">
-                <input type="text"
-                       class="chat-input"
-                       id="chatInput-${service.id}"
-                       placeholder="پیام خود را بنویسید..."
-                       onkeypress="if(event.key==='Enter') sendMessage('${service.id}')">
-                <button class="chat-send-btn" onclick="sendMessage('${service.id}')">📨 ارسال</button>
-              </div>
-            ` : `
-              <div style="text-align:center;color:#b9c2e6;font-size:0.8rem;padding:0.5rem;">
-                💬 چت پس از پذیرش سفارش توسط اپراتور فعال می‌شود
-              </div>
-            `}
+                ${service.status !== 'pending' ? `
+                    <div class="chat-section" id="chatMessages-${service.id}">
+                        ${renderChatMessages(chatData.messages)}
+                    </div>
+                    <div class="chat-input-row">
+                        <input type="text" class="chat-input" id="chatInput-${service.id}"
+                               placeholder="پیام خود را بنویسید..."
+                               onkeypress="if(event.key==='Enter') sendMessage('${service.id}')">
+                        <button class="chat-send-btn" onclick="sendMessage('${service.id}')">📨 ارسال</button>
+                    </div>
+                ` : `
+                    <div style="text-align:center;color:#b9c2e6;font-size:0.8rem;padding:0.5rem;">
+                        💬 چت پس از پذیرش سفارش توسط اپراتور فعال می‌شود
+                    </div>
+                `}
 
-            <div class="order-actions">
-              <span class="price-tag">💲 ${Number(service.final_price).toLocaleString('fa-IR')} تومان</span>
-              ${service.is_paid ? `
-                <button class="pay-btn paid">✅ پرداخت شده</button>
-              ` : `
-                <button class="pay-btn" onclick="showPaymentModal('${service.id}', ${service.final_price})">💳 پرداخت</button>
-              `}
-              ${service.has_file && service.is_paid ? `
-                <a href="/api/service/${service.id}/download/" class="download-btn" style="text-decoration:none;">📥 دانلود نتیجه</a>
-              ` : service.has_file && !service.is_paid ? `
-                <button class="download-btn" disabled>🔒 ابتدا پرداخت کنید</button>
-              ` : service.status === 'completed' ? `
-                <button class="download-btn" disabled>📥 منتظر آپلود فایل</button>
-              ` : `
-                <button class="download-btn" disabled>📥 در انتظار تکمیل</button>
-              `}
+                <div class="order-actions">
+                    <span class="price-tag">💲 ${formatPrice(service.final_price)} تومان</span>
+                    ${service.is_paid ? `
+                        <button class="pay-btn paid">✅ پرداخت شده</button>
+                    ` : `
+                        <button class="pay-btn" onclick="showPaymentModal('${service.id}', ${service.final_price})">💳 پرداخت</button>
+                    `}
+                    ${service.has_file && service.is_paid ? `
+                        <a href="/api/service/${service.id}/download/" class="download-btn">📥 دانلود نتیجه</a>
+                    ` : `
+                        <button class="download-btn" disabled>
+                            📥 ${service.is_paid ? 'منتظر فایل' : 'پرداخت نشده'}
+                        </button>
+                    `}
+                </div>
             </div>
-          </div>
         `;
-      }
-
-      document.getElementById('tabContent').innerHTML = html;
-
-      // اسکرول چت‌ها به پایین
-      document.querySelectorAll('.chat-section').forEach(el => {
-        el.scrollTop = el.scrollHeight;
-      });
     }
 
-    async function renderCompletedOrders() {
-      const completedServices = servicesData.filter(s =>
-        ['completed', 'delivered'].includes(s.status)
-      );
+    tabContent.innerHTML = html;
 
-      if (completedServices.length === 0) {
+    // اسکرول چت‌ها
+    setTimeout(() => {
+        document.querySelectorAll('.chat-section').forEach(el => {
+            el.scrollTop = el.scrollHeight;
+        });
+    }, 200);
+}
+
+async function renderCompletedOrders() {
+    const completedServices = servicesData.filter(s =>
+        ['completed', 'delivered'].includes(s.status)
+    );
+
+    if (completedServices.length === 0) {
         document.getElementById('tabContent').innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <p>سفارش تکمیل شده‌ای ندارید</p>
-          </div>
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <p>سفارش تکمیل شده‌ای ندارید</p>
+            </div>
         `;
         return;
-      }
+    }
 
-      let html = '';
+    let html = '';
 
-      for (const service of completedServices) {
-        const chatData = await loadChatMessages(service.id);
-        const chatMessages = renderChatMessages(service.id, chatData.messages.slice(-5));
+    for (const service of completedServices) {
+        let chatData = { messages: [] };
+        try {
+            chatData = await loadChatMessages(service.id);
+        } catch(e) {}
 
         html += `
-          <div class="order-card">
-            <div class="order-header">
-              <div class="order-icon">${getStatusIcon(service.status)}</div>
-              <div class="order-info">
-                <div class="order-title">${escapeHtml(service.title)}</div>
-                <div class="order-desc">${escapeHtml(service.description || '')}</div>
-                <div class="order-tracking">کد پیگیری: ${service.tracking_code}</div>
-              </div>
-              <span class="order-status ${getStatusClass(service.status)}">${service.status_display}</span>
-            </div>
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-icon">${getStatusIcon(service.status)}</div>
+                    <div class="order-info">
+                        <div class="order-title">${escapeHtml(service.title)}</div>
+                        <div class="order-desc">${escapeHtml(service.description || '')}</div>
+                        <div class="order-tracking">کد پیگیری: ${service.tracking_code}</div>
+                    </div>
+                    <span class="order-status ${getStatusClass(service.status)}">${service.status_display}</span>
+                </div>
 
-            <div class="operator-info">
-              <div class="operator-avatar">🧑‍💻</div>
-              <div>
-                <div class="operator-name">${escapeHtml(service.operator_name || 'نامشخص')}</div>
-                ${service.operator_role ? `<div class="operator-role">${escapeHtml(service.operator_role)}</div>` : ''}
-              </div>
-            </div>
+                <div class="operator-info">
+                    <div class="operator-avatar">🧑‍💻</div>
+                    <div>
+                        <div class="operator-name">${escapeHtml(service.operator_name || 'نامشخص')}</div>
+                        ${service.operator_role ? `<div class="operator-role">${escapeHtml(service.operator_role)}</div>` : ''}
+                    </div>
+                </div>
 
-            <div class="chat-section" style="max-height:120px;">
-              ${chatMessages}
-            </div>
+                <div class="chat-section" style="max-height:120px;" id="chatMessages-${service.id}">
+                    ${renderChatMessages(chatData.messages.slice(-5))}
+                </div>
 
-            <div class="order-actions">
-              <span class="price-tag">💲 ${Number(service.final_price).toLocaleString('fa-IR')} تومان</span>
-              ${service.is_paid ? `
-                <button class="pay-btn paid">✅ پرداخت شده</button>
-                ${service.has_file ? `
-                  <a href="/api/service/${service.id}/download/" class="download-btn" style="text-decoration:none;">📥 دانلود نتیجه</a>
-                ` : ''}
-              ` : `
-                <button class="pay-btn" onclick="showPaymentModal('${service.id}', ${service.final_price})">💳 پرداخت</button>
-                <button class="download-btn" disabled>🔒 ابتدا پرداخت کنید</button>
-              `}
+                <div class="order-actions">
+                    <span class="price-tag">💲 ${formatPrice(service.final_price)} تومان</span>
+                    ${service.is_paid ? `
+                        <button class="pay-btn paid">✅ پرداخت شده</button>
+                        ${service.has_file ? `
+                            <a href="/api/service/${service.id}/download/" class="download-btn">📥 دانلود نتیجه</a>
+                        ` : ''}
+                    ` : `
+                        <button class="pay-btn" onclick="showPaymentModal('${service.id}', ${service.final_price})">💳 پرداخت</button>
+                        <button class="download-btn" disabled>🔒 ابتدا پرداخت کنید</button>
+                    `}
+                </div>
             </div>
-          </div>
         `;
-      }
-
-      document.getElementById('tabContent').innerHTML = html;
     }
 
-    function renderHistory() {
-      const historyServices = servicesData.filter(s =>
-        ['delivered', 'cancelled', 'rejected'].includes(s.status)
-      );
+    document.getElementById('tabContent').innerHTML = html;
+}
 
-      if (historyServices.length === 0) {
+function renderHistory() {
+    const historyServices = servicesData.filter(s =>
+        ['delivered', 'cancelled', 'rejected'].includes(s.status)
+    );
+
+    if (historyServices.length === 0) {
         document.getElementById('tabContent').innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">📜</div>
-            <p>تاریخچه‌ای یافت نشد</p>
-          </div>
+            <div class="empty-state">
+                <div class="empty-icon">📜</div>
+                <p>تاریخچه‌ای یافت نشد</p>
+            </div>
         `;
         return;
-      }
+    }
 
-      document.getElementById('tabContent').innerHTML = historyServices.map(service => `
+    document.getElementById('tabContent').innerHTML = historyServices.map(service => `
         <div class="history-card">
-          <div class="history-icon">${getStatusIcon(service.status)}</div>
-          <div class="history-details">
-            <div class="history-title">${escapeHtml(service.title)}</div>
-            <div class="history-date">📅 ${formatTime(service.created_at)} | ${service.status_display}</div>
-          </div>
-          <div class="history-price">${Number(service.final_price).toLocaleString('fa-IR')} تومان</div>
+            <div class="history-icon">${getStatusIcon(service.status)}</div>
+            <div class="history-details">
+                <div class="history-title">${escapeHtml(service.title)}</div>
+                <div class="history-date">📅 ${service.status_display} | ${service.tracking_code}</div>
+            </div>
+            <div class="history-price">${formatPrice(service.final_price)} تومان</div>
         </div>
-      `).join('');
-    }
+    `).join('');
+}
 
-    function switchTab(tab) {
-      currentTab = tab;
+function switchTab(tab) {
+    currentTab = tab;
 
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.querySelector(`[onclick="switchTab('${tab}')"]`);
+    if (activeBtn) activeBtn.classList.add('active');
 
-      document.getElementById('tabContent').innerHTML = '<div class="chat-loading">⏳ در حال بارگذاری...</div>';
+    document.getElementById('tabContent').innerHTML = '<div class="chat-loading">⏳ در حال بارگذاری...</div>';
 
-      switch(tab) {
-        case 'active': renderActiveOrders(); break;
-        case 'completed': renderCompletedOrders(); break;
-        case 'history': renderHistory(); break;
-      }
-    }
+    if (tab === 'active') renderActiveOrders();
+    else if (tab === 'completed') renderCompletedOrders();
+    else if (tab === 'history') renderHistory();
+}
 
-    // ============================================
-    // توابع چت
-    // ============================================
-    async function sendMessage(serviceId) {
-      const input = document.getElementById(`chatInput-${serviceId}`);
-      if (!input) return;
+// ============================================
+// چت
+// ============================================
+async function sendMessage(serviceId) {
+    const input = document.getElementById(`chatInput-${serviceId}`);
+    if (!input) return;
 
-      const content = input.value.trim();
-      if (!content) return;
+    const content = input.value.trim();
+    if (!content) return;
 
-      const sendBtn = input.nextElementSibling;
-      input.disabled = true;
-      if (sendBtn) sendBtn.disabled = true;
+    const sendBtn = input.nextElementSibling;
+    input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
 
-      try {
+    try {
         const result = await sendChatMessage(serviceId, content);
-
         if (result.success) {
-          input.value = '';
-          // رفرش چت
-          await refreshChat(serviceId);
+            input.value = '';
+            await refreshChat(serviceId);
         } else {
-          showModal('⚠️ خطا در ارسال پیام', '❌');
+            showModal('⚠️ خطا در ارسال پیام', '❌');
         }
-      } catch (error) {
-        showModal('⚠️ خطا در ارسال پیام: ' + error.message, '❌');
-      } finally {
+    } catch (error) {
+        showModal('⚠️ خطا در ارسال پیام', '❌');
+    } finally {
         input.disabled = false;
         if (sendBtn) sendBtn.disabled = false;
         input.focus();
-      }
     }
+}
 
-    async function refreshChat(serviceId) {
-      const chatContainer = document.getElementById(`chatMessages-${serviceId}`);
-      if (!chatContainer) return;
+async function refreshChat(serviceId) {
+    const chatContainer = document.getElementById(`chatMessages-${serviceId}`);
+    if (!chatContainer) return;
 
-      try {
+    try {
         const data = await loadChatMessages(serviceId);
-        chatContainer.innerHTML = renderChatMessages(serviceId, data.messages);
+        chatContainer.innerHTML = renderChatMessages(data.messages);
         chatContainer.scrollTop = chatContainer.scrollHeight;
-      } catch (error) {
+    } catch (error) {
         console.error('Error refreshing chat:', error);
-      }
     }
+}
 
-    // ============================================
-    // پرداخت
-    // ============================================
-    async function confirmPayment() {
-      if (!currentPaymentServiceId) return;
+// ============================================
+// پرداخت
+// ============================================
+async function confirmPayment() {
+    if (!currentPaymentServiceId) return;
 
-      try {
-        const result = await payService(currentPaymentServiceId);
+    try {
+        const result = await payServiceApi(currentPaymentServiceId);
 
         if (result.success) {
-          // آپدیت موجودی
-          document.getElementById('walletBalance').textContent =
-            Number(result.new_balance).toLocaleString('fa-IR') + ' تومان';
+            document.getElementById('walletBalance').textContent =
+                formatPrice(result.new_balance) + ' تومان';
 
-          // آپدیت سرویس در داده‌های محلی
-          const service = servicesData.find(s => s.id === currentPaymentServiceId);
-          if (service) {
-            service.is_paid = true;
-          }
+            const service = servicesData.find(s => s.id === currentPaymentServiceId);
+            if (service) service.is_paid = true;
 
-          showModal('✅ پرداخت با موفقیت انجام شد!', '💳');
-          hidePaymentModal();
-
-          // رفرش تب فعلی
-          switchTab(currentTab);
+            showModal('✅ پرداخت با موفقیت انجام شد!', '💳');
+            hidePaymentModal();
+            switchTab(currentTab);
+        } else {
+            showModal('⚠️ ' + (result.error || 'خطا در پرداخت'), '❌');
         }
-      } catch (error) {
-        showModal('⚠️ خطا در پرداخت: ' + error.message, '❌');
-        hidePaymentModal();
-      }
+    } catch (error) {
+        showModal('⚠️ خطا در پرداخت', '❌');
     }
+}
 
-    // ============================================
-    // ایونت‌ها
-    // ============================================
-    document.getElementById('closeModalBtn').addEventListener('click', hideModal);
-    document.getElementById('modalOverlay').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('modalOverlay')) hideModal();
-    });
+// ============================================
+// Event Listeners
+// ============================================
+document.getElementById('confirmPaymentBtn').addEventListener('click', confirmPayment);
 
-    document.getElementById('confirmPaymentBtn').addEventListener('click', confirmPayment);
-    document.getElementById('cancelPaymentBtn').addEventListener('click', hidePaymentModal);
-    document.getElementById('paymentModal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('paymentModal')) hidePaymentModal();
-    });
-
-    // تب‌ها
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        switchTab(this.dataset.tab);
-      });
-    });
-
-    // Escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
         hideModal();
         hidePaymentModal();
-      }
-    });
+    }
+});
 
-    // رفرش خودکار چت‌های فعال هر ۱۵ ثانیه
-    setInterval(() => {
-      if (currentTab === 'active') {
-        document.querySelectorAll('.chat-section').forEach(el => {
-          const serviceId = el.id.replace('chatMessages-', '');
-          refreshChat(serviceId);
-        });
-      }
-    }, 15000);
+// ============================================
+// شروع اولیه
+// ============================================
+(function init() {
+    // badge اولیه
+    const activeCount = servicesData.filter(s =>
+        ['pending', 'accepted', 'in_progress'].includes(s.status)
+    ).length;
 
-    // ============================================
-    // لود اولیه
-    // ============================================
+    if (activeCount > 0) {
+        const badge = document.getElementById('activeBadge');
+        if (badge) {
+            badge.textContent = activeCount;
+            badge.style.display = 'block';
+        }
+    }
+
+    // رندر تب فعال
     renderActiveOrders();
 
-  </script>
+    // رفرش خودکار چت هر ۱۵ ثانیه
+    setInterval(() => {
+        if (currentTab === 'active') {
+            document.querySelectorAll('[id^="chatMessages-"]').forEach(async (el) => {
+                const serviceId = el.id.replace('chatMessages-', '');
+                await refreshChat(serviceId);
+            });
+        }
+    }, 15000);
+})();
+</script>
+{% endblock %}

@@ -346,6 +346,41 @@ class Service(models.Model):
         return colors.get(self.status, '#6b7280')
 
 
+# home_module/models.py
+# این مدل رو به فایل models.py موجود اضافه کنید
+
+class HomeService(models.Model):
+    """مدل خدمات نمایش داده شده در صفحه اصلی"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    icon = models.CharField(max_length=50, default='📋', verbose_name='آیکون (اموجی)')
+    title = models.CharField(max_length=255, verbose_name='عنوان خدمت')
+    description = models.TextField(verbose_name='توضیحات کوتاه')
+    price = models.BigIntegerField(
+        default=0,
+        verbose_name='قیمت (تومان) - ۰ یعنی تماس بگیرید',
+        help_text='اگر قیمت ۰ باشد، "تماس بگیرید" نمایش داده می‌شود'
+    )
+    is_active = models.BooleanField(default=True, verbose_name='فعال')
+    order = models.IntegerField(default=0, verbose_name='ترتیب نمایش')
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='آخرین بروزرسانی')
+
+    class Meta:
+        db_table = 'home_services'
+        verbose_name = 'خدمت صفحه اصلی'
+        verbose_name_plural = 'خدمات صفحه اصلی'
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return f"{self.icon} {self.title}"
+
+    def get_price_display(self):
+        """نمایش قیمت به صورت خوانا"""
+        if self.price == 0:
+            return 'تماس بگیرید'
+        return f'{self.price:,} تومان'
 # ============================================
 # ServiceChat - مدیریت چت با JSON
 # ============================================

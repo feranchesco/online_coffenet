@@ -1,3 +1,5 @@
+/* static/css/user_profile.css */
+
 /*----profile style----*/
 
 /* ----- هدر پنل ----- */
@@ -146,6 +148,7 @@
     font-size: 0.85rem;
     transition: 0.25s;
     white-space: nowrap;
+    position: relative;
 }
 
 .tab-btn.active {
@@ -156,6 +159,19 @@
 
 .tab-btn:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+.tab-badge {
+    position: absolute;
+    top: -5px;
+    left: 5px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 1rem;
+    font-weight: 700;
+    display: none;
 }
 
 /* ----- کارت سفارش ----- */
@@ -171,6 +187,7 @@
     gap: 1rem;
     box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.55);
     transition: all 0.3s ease;
+    margin-bottom: 1rem;
 }
 
 .order-card:hover {
@@ -211,6 +228,12 @@
 .order-desc {
     font-size: 0.8rem;
     color: #b9c2e6;
+}
+
+.order-tracking {
+    font-size: 0.7rem;
+    color: #a78bfa;
+    margin-top: 0.2rem;
 }
 
 .order-status {
@@ -428,6 +451,7 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    text-decoration: none;
 }
 
 .download-btn:hover {
@@ -465,6 +489,7 @@
     align-items: center;
     gap: 0.8rem;
     box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.4);
+    margin-bottom: 0.8rem;
 }
 
 .history-icon {
@@ -527,20 +552,48 @@
     background: rgba(139, 92, 246, 0.3);
 }
 
-.hidden {
-    display: none;
+/* مودال */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    visibility: hidden;
+    opacity: 0;
+    transition: 0.25s;
 }
 
-@media (max-width: 450px) {
-    .panel-header {
-        padding: 1.2rem;
-    }
-
-    .order-card {
-        padding: 1.2rem;
-    }
+.modal-overlay.active {
+    visibility: visible;
+    opacity: 1;
 }
 
+.modal-box {
+    background: rgba(30,30,50,0.85);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 2.8rem;
+    padding: 2rem;
+    max-width: 350px;
+    width: 90%;
+    text-align: center;
+    color: white;
+}
+
+.close-modal {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 0.7rem 2rem;
+    border-radius: 3rem;
+    margin-top: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+}
 
 .modal-buttons {
     display: flex;
@@ -570,25 +623,7 @@
     font-weight: 600;
 }
 
-.tab-badge {
-    position: absolute;
-    top: -5px;
-    left: 5px;
-    background: #ef4444;
-    color: white;
-    font-size: 0.6rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 1rem;
-    font-weight: 700;
-    display: none;
-}
-
-.order-tracking {
-    font-size: 0.7rem;
-    color: #a78bfa;
-    margin-top: 0.2rem;
-}
-
+/* empty state */
 .empty-state {
     text-align: center;
     padding: 2rem;
@@ -609,4 +644,19 @@
     cursor: pointer;
     font-size: 0.8rem;
     margin-top: 0.5rem;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 450px) {
+    .panel-header {
+        padding: 1.2rem;
+    }
+    .order-card {
+        padding: 1.2rem;
+    }
 }

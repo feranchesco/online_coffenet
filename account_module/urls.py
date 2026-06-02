@@ -12,6 +12,7 @@ urlpatterns = [
     path('login/', views.customer_login, name='customer_login'),
     path('register/', views.customer_register, name='customer_register'),
     path('logout/', views.customer_logout, name='customer_logout'),
+    path('profile/', views.profile, name='profile'),  # ✅ جدید
 
     # پنل مشتری
     # path('panel/', views.customer_panel, name='customer_panel'),

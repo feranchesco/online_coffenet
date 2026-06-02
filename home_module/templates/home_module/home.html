@@ -48,111 +48,375 @@
             <!-- دکمه پروفایل -->
             <div class="floating-profile" id="profileBtn">👤</div>
         {% endif %}
-        <!-- ========== مودال عمومی ========== -->
-        <div class="modal-overlay" id="modalOverlay">
-            <div class="modal-box">
-                <div style="font-size:2.5rem;">✨</div>
-                <p id="modalMessage">پیام</p>
-                <button class="close-modal" id="closeModalBtn">باشه</button>
+            <!-- ========== مودال عمومی ========== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <div style="font-size:2.5rem;" id="modalIcon">✨</div>
+            <p id="modalMessage">پیام</p>
+            <button class="close-modal" id="closeModalBtn">باشه</button>
+        </div>
+    </div>
+
+    <!-- ========== مودال ثبت‌نام ========== -->
+    <div class="auth-section" id="registerSection" style="display: none;">
+        <div class="auth-card">
+            <!-- ✅ دکمه بستن اصلاح شده -->
+            <button class="auth-close-btn" onclick="document.getElementById('registerSection').style.display='none'">✕</button>
+            <div class="auth-header">
+                <span class="auth-icon">📝</span>
+                <h2>ثبت‌نام در کافی نت</h2>
+                <p class="auth-subtitle">حساب کاربری جدید بسازید</p>
+            </div>
+
+            <form class="auth-form" id="registerForm">
+                {% csrf_token %}
+                <div class="input-group">
+                    <label class="input-label">👤 نام و نام خانوادگی</label>
+                    <input type="text" class="auth-input" id="fullNameInput"
+                           placeholder="مانند: علی محمدی" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">📱 شماره تلفن</label>
+                    <input type="tel" class="auth-input" id="phoneInput"
+                           placeholder="09xxxxxxxxx" pattern="09[0-9]{9}" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">🔒 رمز عبور</label>
+                    <input type="password" class="auth-input" id="regPasswordInput"
+                           placeholder="حداقل ۴ کاراکتر" required minlength="4">
+                </div>
+
+                <button type="submit" class="auth-submit-btn">
+                    <span>✨</span> تکمیل ثبت‌نام
+                </button>
+            </form>
+
+            <div class="auth-switch">
+                قبلاً حساب دارید؟
+                <button class="text-btn" onclick="showLogin()">وارد شوید</button>
             </div>
         </div>
+    </div>
 
-        <!-- ========== بخش ثبت‌نام ========== -->
-        <div class="auth-section" id="registerSection" style="display: none;">
-            <div class="auth-card">
-                <button class="auth-close-btn" onclick="hideAllAuth()">✕</button>
-                <div class="auth-header">
-                    <span class="auth-icon">📝</span>
-                    <h2>ثبت‌نام در کافی نت</h2>
-                    <p class="auth-subtitle">حساب کاربری جدید بسازید</p>
+    <!-- ========== مودال ورود ========== -->
+    <div class="auth-section" id="loginSection" style="display: none;">
+        <div class="auth-card">
+            <!-- ✅ دکمه بستن اصلاح شده -->
+            <button class="auth-close-btn" onclick="document.getElementById('loginSection').style.display='none'">✕</button>
+            <div class="auth-header">
+                <span class="auth-icon">🔐</span>
+                <h2>ورود به حساب</h2>
+                <p class="auth-subtitle">به پنل خود دسترسی پیدا کنید</p>
+            </div>
+
+            <form class="auth-form" id="loginForm">
+                {% csrf_token %}
+                <div class="input-group">
+                    <label class="input-label">📱 شماره تلفن</label>
+                    <input type="tel" class="auth-input" id="loginPhoneInput"
+                           placeholder="09xxxxxxxxx" required>
                 </div>
 
-                <form class="auth-form" id="registerForm">
-                    <div class="input-group">
-                        <label class="input-label">👤 نام و نام خانوادگی</label>
-                        <input
-                                type="text"
-                                class="auth-input"
-                                id="fullNameInput"
-                                placeholder="مانند: علی محمدی"
-                                required
-                        >
+                <div class="input-group">
+                    <label class="input-label">🔒 رمز عبور</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="auth-input" id="loginPasswordInput"
+                               placeholder="••••••••" required>
+                        <button type="button" class="toggle-password" id="togglePasswordBtn">👁️</button>
                     </div>
-
-                    <div class="input-group">
-                        <label class="input-label">📱 شماره تلفن</label>
-                        <input
-                                type="tel"
-                                class="auth-input"
-                                id="phoneInput"
-                                placeholder="09xxxxxxxxx"
-                                pattern="09[0-9]{9}"
-                                required
-                        >
-                    </div>
-
-                    <button type="submit" class="auth-submit-btn">
-                        <span>✨</span> تکمیل ثبت‌نام
-                    </button>
-                </form>
-
-                <div class="auth-switch">
-                    قبلاً حساب دارید؟
-                    <button class="text-btn" onclick="showLogin()">وارد شوید</button>
                 </div>
+
+                <button type="submit" class="auth-submit-btn">
+                    <span>🚀</span> ورود به حساب
+                </button>
+            </form>
+
+            <div class="auth-switch">
+                حساب ندارید؟
+                <button class="text-btn" onclick="showRegister()">ثبت‌نام کنید</button>
             </div>
         </div>
-
-        <!-- ========== بخش ورود ========== -->
-        <div class="auth-section" id="loginSection" style="display: none;">
-            <div class="auth-card">
-                <button class="auth-close-btn" onclick="hideAllAuth()">✕</button>
-                <div class="auth-header">
-                    <span class="auth-icon">🔐</span>
-                    <h2>ورود به حساب</h2>
-                    <p class="auth-subtitle">به پنل خود دسترسی پیدا کنید</p>
-                </div>
-
-                <form class="auth-form" id="loginForm">
-                    <div class="input-group">
-                        <label class="input-label">👤 نام کاربری</label>
-                        <input
-                                type="text"
-                                class="auth-input"
-                                id="usernameInput"
-                                placeholder="نام کاربری یا شماره تلفن"
-                                required
-                        >
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">🔒 رمز عبور</label>
-                        <div class="password-wrapper">
-                            <input
-                                    type="password"
-                                    class="auth-input"
-                                    id="passwordInput"
-                                    placeholder="••••••••"
-                                    required
-                            >
-                            <button type="button" class="toggle-password" id="togglePasswordBtn">👁️</button>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="auth-submit-btn">
-                        <span>🚀</span> ورود به حساب
-                    </button>
-                </form>
-
-                <div class="auth-switch">
-                    حساب ندارید؟
-                    <button class="text-btn" onclick="showRegister()">ثبت‌نام کنید</button>
-                </div>
-            </div>
-        </div>
+    </div>
+</div>
     </section>
     {% if request.user.is_authenticated %}
         {% render_partial "account_module.views.profile" %}
     {% endif %}
 
+<!-- templates/home_module/home.html -->
+<!-- فقط بخش اسکریپت رو با این جایگزین کنید -->
+
+{% block extra_js %}
+<script>
+// ============================================
+// دریافت خدمات از سرور (دیتابیس)
+// ============================================
+let servicesList = [];
+
+async function loadServices() {
+    try {
+        const response = await fetch('/api/home-services/');
+        const data = await response.json();
+        servicesList = data.services;
+        renderServices();
+    } catch (error) {
+        console.error('Error loading services:', error);
+        // Fallback: خدمات پیش‌فرض
+        servicesList = [
+            { icon: "🖨️", title: "پرینت و اسکن", description: "پرینت رنگی، اسکن مدارک", price: 5000 },
+            { icon: "🏛️", title: "خدمات دولتی", description: "استعلام و ثبت نام", price: 15000 },
+            { icon: "🌐", title: "ثبت نام اینترنتی", description: "کنکور، مهاجرت", price: 20000 },
+            { icon: "🎓", title: "خدمات دانشجویی", description: "پایان‌نامه، جزوه", price: 10000 },
+            { icon: "✍️", title: "تایپ و طراحی", description: "رزومه، تایپ فارسی", price: 8000 },
+            { icon: "📦", title: "پیگیری سفارشات", description: "رهگیری مرسوله", price: 3000 },
+            { icon: "⚙️", title: "خدمات سفارشی", description: "سفارش خاص شما", price: 0 }
+        ];
+        renderServices();
+    }
+}
+
+// ============================================
+// توابع کمکی
+// ============================================
+function formatPrice(price) {
+    if (price === 0) return 'تماس بگیرید';
+    return price.toLocaleString('fa-IR') + ' تومان';
+}
+
+function showModal(text, icon = '✨') {
+    document.getElementById('modalMessage').textContent = text;
+    document.getElementById('modalIcon').textContent = icon;
+    document.getElementById('modalOverlay').classList.add('active');
+}
+
+function hideModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function hideAllAuth() {
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('loginSection').style.display = 'none';
+}
+
+function showRegister() {
+    hideAllAuth();
+    document.getElementById('registerSection').style.display = 'flex';
+}
+
+function showLogin() {
+    hideAllAuth();
+    document.getElementById('loginSection').style.display = 'flex';
+}
+
+// ============================================
+// اخبار (ثابت)
+// ============================================
+const newsItems = [
+    { text: "تخفیف ویژه چاپ و پرینت تا پایان هفته", date: "امروز" },
+    { text: "ثبت‌نام آزمون‌های سراسری آغاز شد", date: "دیروز" },
+    { text: "خدمات جدید تایپ و ترجمه در کافی‌نت", date: "۲ روز پیش" },
+    { text: "ساعت کاری کافی‌نت در تابستان افزایش یافت", date: "۳ روز پیش" },
+    { text: "طرح ویژه دانشجویان با ۲۰٪ تخفیف", date: "۴ روز پیش" }
+];
+
+function renderNews() {
+    const newsHTML = newsItems.map(item => `
+        <div class="news-item">
+            <div>${item.text}</div>
+            <div class="news-date">📅 ${item.date}</div>
+        </div>
+    `).join('');
+
+    document.getElementById('newsListContainer').innerHTML = newsHTML;
+    document.getElementById('newsMobileListContainer').innerHTML = newsHTML;
+}
+
+// ============================================
+// رندر خدمات
+// ============================================
+function renderServices() {
+    document.getElementById('servicesListContainer').innerHTML = servicesList.map((svc, i) => `
+        <div class="service-row">
+            <div class="row-header">
+                <div class="row-icon">${svc.icon}</div>
+                <div class="row-info">
+                    <div class="row-title">${svc.title}</div>
+                    <div class="row-desc">${svc.description || svc.desc || ''}</div>
+                </div>
+                <div class="row-price">💲 ${svc.price_display || formatPrice(svc.price)}</div>
+            </div>
+            <textarea class="description-input" placeholder="توضیحات سفارش خود را بنویسید..." rows="2"></textarea>
+            <button class="order-btn" onclick="createOrder(${i})">📋 ثبت سفارش</button>
+        </div>
+    `).join('');
+}
+
+// ============================================
+// ثبت سفارش (واقعی)
+// ============================================
+async function createOrder(index) {
+    {% if not user.is_authenticated %}
+        showModal('⚠️ لطفاً ابتدا وارد حساب کاربری خود شوید', '🔐');
+        showLogin();
+        return;
+    {% endif %}
+
+    const svc = servicesList[index];
+    const textarea = document.querySelectorAll('.description-input')[index];
+    const description = textarea?.value || '';
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+    try {
+        const response = await fetch('/api/service/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrf,
+            },
+            body: JSON.stringify({
+                title: svc.title,
+                description: description || svc.description || '',
+                price: svc.price,
+                priority: 'medium'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showModal(`✅ سفارش با موفقیت ثبت شد!\nکد پیگیری: ${data.tracking_code}\nمشاهده در پنل کاربری`, '🎉');
+            textarea.value = '';
+        } else {
+            showModal('⚠️ ' + (data.error || 'خطا در ثبت سفارش'), '❌');
+        }
+    } catch (error) {
+        showModal('⚠️ خطا در ارتباط با سرور', '❌');
+    }
+}
+
+// ============================================
+// Event Listeners
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    // بارگذاری خدمات از سرور
+    loadServices();
+    renderNews();
+
+    // مودال عمومی
+    document.getElementById('closeModalBtn').addEventListener('click', hideModal);
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('modalOverlay')) hideModal();
+    });
+
+    // کد تخفیف
+    document.getElementById('applyDiscountBtn').addEventListener('click', () => {
+        const code = document.getElementById('discountCodeInput').value.trim();
+        if (code) {
+            showModal(`🎉 کد تخفیف «${code}» اعمال شد!`, '🏷️');
+        } else {
+            showModal('⚠️ لطفاً کد تخفیف را وارد کنید', '🏷️');
+        }
+    });
+
+    // اخبار موبایل
+    const floatingNewsBtn = document.getElementById('floatingNewsBtn');
+    const newsMobileModal = document.getElementById('newsMobileModal');
+    const closeNewsMobileBtn = document.getElementById('closeNewsMobileBtn');
+
+    if (floatingNewsBtn && newsMobileModal) {
+        floatingNewsBtn.addEventListener('click', () => newsMobileModal.classList.add('active'));
+        closeNewsMobileBtn.addEventListener('click', () => newsMobileModal.classList.remove('active'));
+        newsMobileModal.addEventListener('click', (e) => {
+            if (e.target === newsMobileModal) newsMobileModal.classList.remove('active');
+        });
+    }
+
+    // ثبت‌نام
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fullName = document.getElementById('fullNameInput').value.trim();
+        const phone = document.getElementById('phoneInput').value.trim();
+        const password = document.getElementById('regPasswordInput').value.trim();
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+        if (!fullName || !phone.match(/09[0-9]{9}/)) {
+            showModal('⚠️ لطفاً اطلاعات را صحیح وارد کنید', '❌');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('full_name', fullName);
+            formData.append('phone', phone);
+            formData.append('password', password || phone);
+            formData.append('csrfmiddlewaretoken', csrf);
+
+            const response = await fetch('/register/', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+        } catch (error) {
+            showModal('⚠️ خطا در ثبت‌نام', '❌');
+        }
+    });
+
+    // ورود
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const phone = document.getElementById('loginPhoneInput').value.trim();
+        const password = document.getElementById('loginPasswordInput').value.trim();
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+        try {
+            const formData = new FormData();
+            formData.append('phone', phone);
+            formData.append('password', password);
+            formData.append('csrfmiddlewaretoken', csrf);
+
+            const response = await fetch('/login/', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                showModal('⚠️ شماره تلفن یا رمز عبور اشتباه است', '❌');
+            }
+        } catch (error) {
+            showModal('⚠️ خطا در ورود', '❌');
+        }
+    });
+
+    // نمایش/مخفی رمز عبور
+    document.getElementById('togglePasswordBtn').addEventListener('click', function() {
+        const passInput = document.getElementById('loginPasswordInput');
+        const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passInput.setAttribute('type', type);
+        this.textContent = type === 'password' ? '👁️' : '🙈';
+    });
+
+    // پنل مدیریت
+    const navPan = document.getElementById('navPan');
+    if (navPan) {
+        navPan.addEventListener('click', () => window.location.href = '/admin/');
+    }
+
+    // Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideModal();
+            hideAllAuth();
+            document.getElementById('newsMobileModal')?.classList.remove('active');
+        }
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}
