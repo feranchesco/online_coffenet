@@ -22,7 +22,11 @@
     {% endif %}
     {% if request.user.is_authenticated %}
         <button id="homeBtn" class="nav-item"><span>🏠</span><span>خانه</span></button>
-    	<button class="nav-item" id="userPanBtn"><span>👤</span><span>پنل کاربری</span></button>
+{#    	<button class="nav-item" id="userPanBtn"><span>👤</span><span>پنل کاربری</span></button>#}
+    <button class="nav-item" id="userPanBtn" onclick="window.location.href='{% url 'profile' %}'">
+        <span>👤</span>
+        <span>پنل کاربری</span>
+    </button>
         <a href="{% url 'customer_logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>
     {% endif %}
 </nav>

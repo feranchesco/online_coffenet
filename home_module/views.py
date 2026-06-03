@@ -196,7 +196,6 @@ def operator_panel(request):
     return render(request, 'account_module/operator_panel.html', context)
 
 
-
 # ============================================
 # API های اپراتور
 # ============================================
