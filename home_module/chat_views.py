@@ -5,9 +5,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_GET
 import json
-
-from .models import Service, Operator
-from account_module.models import Customer
+from .models import Service
+from account_module.models import Customer, Operator
 
 
 def get_user_type(user):

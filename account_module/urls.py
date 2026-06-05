@@ -6,22 +6,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('signup/', views.signup, name='signup'),
+    # path('signup/', views.signup, name='signup'),
     path('admin/', admin.site.urls),
     # احراز هویت
-    path('login/', views.customer_login, name='customer_login'),
-    path('register/', views.customer_register, name='customer_register'),
+    path('cu-login/', views.CustomerLogin.as_view(), name='customer_login'),
+    path('cu-signup/', views.CustomerSignup.as_view(), name='customer_signup'),
     path('logout/', views.customer_logout, name='customer_logout'),
     path('profile/', views.profile, name='profile'),  # ✅ جدید
-
-    # پنل مشتری
-    # path('panel/', views.customer_panel, name='customer_panel'),
-
-    # API ها
-    path('api/service/create/', views.create_service, name='create_service'),
-    path('api/service/<uuid:service_id>/pay/', views.pay_service, name='pay_service'),
-    path('api/service/<uuid:service_id>/download/', views.download_result, name='download_result'),
-    path('api/service/<uuid:service_id>/rate/', views.rate_service, name='rate_service'),
+    # اپراتور
+    path('op-panel/', views.operator_panel, name='operator_panel'),
+    path('op-signup', views.OperatorSignup.as_view(), name='operator_signup'),
+    path('op-login', views.OperatorLogin.as_view(), name='operator_login'),
+    path('op-logout', views.operator_logout, name='operator_logout'),
 ]
 
 # سرو فایل‌های static و media در حالت development

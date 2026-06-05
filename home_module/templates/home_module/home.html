@@ -99,50 +99,7 @@
             </div>
         </div>
     </div>
-
-    <!-- ========== مودال ورود ========== -->
-    <div class="auth-section" id="loginSection" style="display: none;">
-        <div class="auth-card">
-            <!-- ✅ دکمه بستن اصلاح شده -->
-            <button class="auth-close-btn" onclick="document.getElementById('loginSection').style.display='none'">✕</button>
-            <div class="auth-header">
-                <span class="auth-icon">🔐</span>
-                <h2>ورود به حساب</h2>
-                <p class="auth-subtitle">به پنل خود دسترسی پیدا کنید</p>
-            </div>
-
-            <form class="auth-form" id="loginForm">
-                {% csrf_token %}
-                <div class="input-group">
-                    <label class="input-label">📱 شماره تلفن</label>
-                    <input type="tel" class="auth-input" id="loginPhoneInput"
-                           placeholder="09xxxxxxxxx" required>
-                </div>
-
-                <div class="input-group">
-                    <label class="input-label">🔒 رمز عبور</label>
-                    <div class="password-wrapper">
-                        <input type="password" class="auth-input" id="loginPasswordInput"
-                               placeholder="••••••••" required>
-                        <button type="button" class="toggle-password" id="togglePasswordBtn">👁️</button>
-                    </div>
-                </div>
-
-                <button type="submit" class="auth-submit-btn">
-                    <span>🚀</span> ورود به حساب
-                </button>
-            </form>
-
-            <div class="auth-switch">
-                حساب ندارید؟
-                <button class="text-btn" onclick="showRegister()">ثبت‌نام کنید</button>
-            </div>
-        </div>
-    </div>
     </section>
-{#    {% if request.user.is_authenticated %}#}
-{#        {% render_partial "account_module.views.profile" %}#}
-{#    {% endif %}#}
 
 <!-- templates/home_module/home.html -->
 <!-- فقط بخش اسکریپت رو با این جایگزین کنید -->

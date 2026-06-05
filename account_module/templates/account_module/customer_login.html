@@ -1,0 +1,39 @@
+{% extends "shared/layout.html" %}
+{% block title %}
+    صفحه ورود مشتری
+{% endblock %}
+{% block content %}
+    <h1>به صفحه ورود مشتری خوش آمدید</h1>
+    <div class="auth-header">
+        <span class="auth-icon">🔐</span>
+        <h2>ورود به حساب</h2>
+        <p class="auth-subtitle">به پنل خود دسترسی پیدا کنید</p>
+    </div>
+    <form class="auth-form" id="loginForm" method="post" action="{% url 'customer_login' %}">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="input-group">
+            <label class="input-label">📱 شماره تلفن</label>
+            {{ form.phone }}
+            {{ form.phone.errors }}
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">🔒 رمز عبور</label>
+            <div class="password-wrapper">
+                {{ form.password }}
+                <button type="button" class="toggle-password" id="togglePasswordBtn">👁️</button>
+                {{ form.password.errors }}
+            </div>
+        </div>
+
+        <button type="submit" class="auth-submit-btn">
+            <span>🚀</span> ورود به حساب
+        </button>
+    </form>
+
+    <div class="auth-switch">
+        حساب ندارید؟
+        <button class="text-btn" onclick="showRegister()">ثبت‌نام کنید</button>
+    </div>
+{% endblock %}

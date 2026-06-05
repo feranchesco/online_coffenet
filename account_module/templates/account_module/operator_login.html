@@ -1,0 +1,21 @@
+{% extends "shared/layout.html" %}
+{% block title %}
+    صفحه ورود اپراتور ها
+{% endblock %}
+
+{% block content %}
+    <h1>به صفحه ی ورود اپراتور ها خوش آمدید</h1>
+    <form action="{% url "operator_login" %}" method="post">
+    {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            {{ field }}
+            {{ field.errors }}
+            <br>
+        {% endfor %}
+        <button type="submit"><span>ورود  اپراتور</span></button>
+
+    </form>
+
+
+{% endblock %}

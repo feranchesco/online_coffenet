@@ -45,7 +45,6 @@
             floatingNewsBtn: document.getElementById('floatingNewsBtn'),
             // دکمه‌های جدید
             navReg: document.getElementById('navReg'),
-            navLog: document.getElementById('navLog'),
             profileBtn: document.getElementById('profileBtn')
         };
     }
@@ -272,43 +271,6 @@
             });
         }
 
-        // ورود
-        if (elements.loginForm) {
-            elements.loginForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const phone = elements.loginPhoneInput?.value.trim() || '';
-                const password = elements.loginPasswordInput?.value.trim() || '';
-                const csrf = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
-
-                if (!phone || !password) {
-                    showModal('⚠️ لطفاً شماره تلفن و رمز عبور را وارد کنید', '❌');
-                    return;
-                }
-
-                try {
-                    const formData = new FormData();
-                    formData.append('phone', phone);
-                    formData.append('password', password);
-                    formData.append('csrfmiddlewaretoken', csrf);
-
-                    const response = await fetch('/login/', {
-                        method: 'POST',
-                        body: formData,
-                    });
-
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    } else {
-                        const result = await response.json();
-                        showModal('⚠️ ' + (result.error || 'شماره تلفن یا رمز عبور اشتباه است'), '❌');
-                    }
-                } catch (error) {
-                    console.error('Login error:', error);
-                    showModal('⚠️ خطا در ورود', '❌');
-                }
-            });
-        }
-
         // نمایش/مخفی رمز عبور
         if (elements.togglePasswordBtn && elements.loginPasswordInput) {
             elements.togglePasswordBtn.addEventListener('click', function() {
@@ -352,16 +314,6 @@
             });
         } else {
             console.warn('دکمه navReg پیدا نشد');
-        }
-
-        if (elements.navLog) {
-            elements.navLog.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log('کلیک روی دکمه ورود');
-                showLogin();
-            });
-        } else {
-            console.warn('دکمه navLog پیدا نشد');
         }
 
         // دکمه پروفایل
@@ -437,7 +389,6 @@
         // چک کردن وجود عناصر مهم
         console.log('عناصر یافت شده:', {
             navReg: !!elements.navReg,
-            navLog: !!elements.navLog,
             registerSection: !!elements.registerSection,
             loginSection: !!elements.loginSection
         });
