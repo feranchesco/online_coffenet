@@ -25,7 +25,8 @@ INSTALLED_APPS = [
     'home_module',
     'account_module',
     'admin_panel',
-    'django.contrib.humanize'
+    'django.contrib.humanize',
+    'order_module'
 ]
 
 MIDDLEWARE = [

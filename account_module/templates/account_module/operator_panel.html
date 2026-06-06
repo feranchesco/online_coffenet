@@ -657,7 +657,7 @@
         <div>
           <div class="wallet-balance" id="walletBalance">{{ operator.wallet_balance|default:0|floatformat:0|intcomma }} تومان</div>
           <div class="wallet-label">موجودی قابل برداشت</div>
-          <div class="wallet-detail" id="pendingPayment">در انتظار: {{ operator.pending_payment|default:0|floatformat:0|intcomma }} تومان</div>
+          <div class="wallet-detail" id="pendingPayment">درآمد شما برای سایت : {{ operator.pending_payment|default:0|floatformat:0|intcomma }} تومان</div>
         </div>
       </div>
     </div>
@@ -739,7 +739,7 @@
     const servicesData = {{ services_json|safe }};
     const csrfToken = '{{ csrf_token }}';
     const operatorId = '{{ operator.id }}';
-    const COMMISSION_RATE = {{ commission_rate|default:20 }}; // درصد کمیسیون
+    const COMMISSION_RATE = {{ commission_rate|default:40 }}; // درصد کمیسیون
 
     let currentTab = 'pending';
     let confirmCallback = null;

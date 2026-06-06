@@ -95,7 +95,7 @@ class Service(models.Model):
         blank=True,
         verbose_name='قیمت نهایی (تومان)'
     )
-    commission_percent = models.FloatField(default=20.0, verbose_name='درصد کمیسیون')
+    commission_percent = models.FloatField(default=40.0, verbose_name='درصد کمیسیون')
     commission_amount = models.BigIntegerField(default=0, verbose_name='مبلغ کمیسیون (تومان)')
 
     # پرداخت
@@ -482,7 +482,6 @@ class ServiceChat:
 # ============================================
 class Transaction(models.Model):
     """مدل تراکنش‌های مالی"""
-
     TYPE_CHOICES = [
         ('deposit', 'شارژ کیف پول'),
         ('payment', 'پرداخت خدمت'),
