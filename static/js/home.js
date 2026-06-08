@@ -2,7 +2,7 @@
 // home.js - فایل یکپارچه اسکریپت‌های صفحه اصلی
 // ============================================
 
-(function() {
+(function () {
     'use strict';
 
     // ==================== دیتاهای استاتیک ====================
@@ -37,6 +37,7 @@
             loginForm: document.getElementById('loginForm'),
             togglePasswordBtn: document.getElementById('togglePasswordBtn'),
             loginPasswordInput: document.getElementById('loginPasswordInput'),
+            signupPasswordInput: document.getElementById('signupPasswordInput'),
             loginPhoneInput: document.getElementById('loginPhoneInput'),
             regPasswordInput: document.getElementById('regPasswordInput'),
             fullNameInput: document.getElementById('fullNameInput'),
@@ -71,28 +72,6 @@
         if (elements.loginSection) elements.loginSection.style.display = 'none';
     }
 
-    function showRegister() {
-        hideAllAuth();
-        if (elements.registerSection) {
-            elements.registerSection.style.display = 'flex';
-            console.log('نمایش فرم ثبت نام');
-        } else {
-            console.error('عنصر registerSection یافت نشد');
-            showModal('خطا: فرم ثبت نام پیدا نشد', '❌');
-        }
-    }
-
-    function showLogin() {
-        hideAllAuth();
-        if (elements.loginSection) {
-            elements.loginSection.style.display = 'flex';
-            console.log('نمایش فرم ورود');
-        } else {
-            console.error('عنصر loginSection یافت نشد');
-            showModal('خطا: فرم ورود پیدا نشد', '❌');
-        }
-    }
-
     // ==================== اخبار ====================
     function renderNews(containerEl, items) {
         if (!containerEl) return;
@@ -118,13 +97,13 @@
             console.error('Error loading services:', error);
             // Fallback: خدمات پیش‌فرض
             servicesList = [
-                { icon: "🖨️", title: "پرینت و اسکن", description: "پرینت رنگی، اسکن مدارک", price: 5000 },
-                { icon: "🏛️", title: "خدمات دولتی", description: "استعلام و ثبت نام", price: 15000 },
-                { icon: "🌐", title: "ثبت نام اینترنتی", description: "کنکور، مهاجرت", price: 20000 },
-                { icon: "🎓", title: "خدمات دانشجویی", description: "پایان‌نامه، جزوه", price: 10000 },
-                { icon: "✍️", title: "تایپ و طراحی", description: "رزومه، تایپ فارسی", price: 8000 },
-                { icon: "📦", title: "پیگیری سفارشات", description: "رهگیری مرسوله", price: 3000 },
-                { icon: "⚙️", title: "خدمات سفارشی", description: "سفارش خاص شما", price: 0 }
+                {icon: "🖨️", title: "پرینت و اسکن", description: "پرینت رنگی، اسکن مدارک", price: 5000},
+                {icon: "🏛️", title: "خدمات دولتی", description: "استعلام و ثبت نام", price: 15000},
+                {icon: "🌐", title: "ثبت نام اینترنتی", description: "کنکور، مهاجرت", price: 20000},
+                {icon: "🎓", title: "خدمات دانشجویی", description: "پایان‌نامه، جزوه", price: 10000},
+                {icon: "✍️", title: "تایپ و طراحی", description: "رزومه، تایپ فارسی", price: 8000},
+                {icon: "📦", title: "پیگیری سفارشات", description: "رهگیری مرسوله", price: 3000},
+                {icon: "⚙️", title: "خدمات سفارشی", description: "سفارش خاص شما", price: 0}
             ];
             renderServices();
         }
@@ -226,57 +205,16 @@
 
     // ==================== رویدادهای فرم‌ها ====================
     function initFormEvents() {
-        // ثبت‌نام
-        if (elements.registerForm) {
-            elements.registerForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const fullName = elements.fullNameInput?.value.trim() || '';
-                const phone = elements.phoneInput?.value.trim() || '';
-                const password = elements.regPasswordInput?.value.trim() || '';
-                const csrf = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
-
-                if (!fullName || !phone.match(/09[0-9]{9}/)) {
-                    showModal('⚠️ لطفاً اطلاعات را صحیح وارد کنید', '❌');
-                    return;
-                }
-
-                try {
-                    const formData = new FormData();
-                    formData.append('full_name', fullName);
-                    formData.append('phone', phone);
-                    formData.append('password', password || phone);
-                    formData.append('csrfmiddlewaretoken', csrf);
-
-                    const response = await fetch('/register/', {
-                        method: 'POST',
-                        body: formData,
-                    });
-
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    } else {
-                        const result = await response.json();
-                        if (result.success) {
-                            showModal('✅ ثبت‌نام با موفقیت انجام شد!', '🎉');
-                            hideAllAuth();
-                            elements.registerForm.reset();
-                        } else {
-                            showModal('⚠️ ' + (result.error || 'خطا در ثبت‌نام'), '❌');
-                        }
-                    }
-                } catch (error) {
-                    console.error('Register error:', error);
-                    showModal('⚠️ خطا در ثبت‌نام', '❌');
-                }
-            });
-        }
-
         // نمایش/مخفی رمز عبور
-        if (elements.togglePasswordBtn && elements.loginPasswordInput) {
-            elements.togglePasswordBtn.addEventListener('click', function() {
-                const type = elements.loginPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                elements.loginPasswordInput.setAttribute('type', type);
-                this.textContent = type === 'password' ? '👁️' : '🙈';
+        if (elements.togglePasswordBtn && (elements.loginPasswordInput || elements.signupPasswordInput)) {
+            elements.togglePasswordBtn.addEventListener('click', function () {
+                let targetInput = elements.loginPasswordInput || elements.signupPasswordInput;
+
+                if (targetInput) {
+                    const type = targetInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    targetInput.setAttribute('type', type);
+                    this.textContent = type === 'password' ? '👁️' : '🙈';
+                }
             });
         }
     }
@@ -301,28 +239,6 @@
                     showModal(`🎉 کد تخفیف «${code}» اعمال شد!`, '🏷️');
                 } else {
                     showModal('⚠️ لطفاً کد تخفیف را وارد کنید', '🏷️');
-                }
-            });
-        }
-
-        // دکمه‌های ثبت نام و ورود
-        if (elements.navReg) {
-            elements.navReg.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log('کلیک روی دکمه ثبت نام');
-                showRegister();
-            });
-        } else {
-            console.warn('دکمه navReg پیدا نشد');
-        }
-
-        // دکمه پروفایل
-        if (elements.profileBtn) {
-            elements.profileBtn.addEventListener('click', () => {
-                if (window.userAuthenticated) {
-                    window.location.href = '/profile/';
-                } else {
-                    showLogin();
                 }
             });
         }
@@ -353,12 +269,12 @@
 
         // بستن auth با کلیک خارج
         if (elements.registerSection) {
-            elements.registerSection.addEventListener('click', function(e) {
+            elements.registerSection.addEventListener('click', function (e) {
                 if (e.target === elements.registerSection) hideAllAuth();
             });
         }
         if (elements.loginSection) {
-            elements.loginSection.addEventListener('click', function(e) {
+            elements.loginSection.addEventListener('click', function (e) {
                 if (e.target === elements.loginSection) hideAllAuth();
             });
         }

@@ -14,19 +14,19 @@
 <!-- نوار پایین -->
 <nav class="bottom-nav">
     {% if not request.user.is_authenticated %}
-    	<button class="nav-item" id="navReg"><span>📝</span><span>ثبت‌نام</span></button>
+    	<a href="{% url 'customer_signup' %}" class="nav-item" id="navReg"><span>📝</span><span>ثبت‌نام</span></a>
         <a href="{% url 'customer_login' %}" class="nav-item" id="navLog"><span>🔐</span><span>ورود</span></a>
     {% endif %}
     {% if request.user.is_superuser %}
     	<button class="nav-item" id="navPan"><span>📊</span><span>پنل مدیریت</span></button>
     {% endif %}
     {% if request.user.is_authenticated %}
-    <button id="homeBtn" class="nav-item"><span>🏠</span><span>خانه</span></button>
+    <a href="/" id="homeBtn" class="nav-item"><span>🏠</span><span>خانه</span></a>
 {#    	<button class="nav-item" id="userPanBtn"><span>👤</span><span>پنل کاربری</span></button>#}
-    <button class="nav-item" id="userPanBtn" onclick="window.location.href='{% url 'profile' %}'">
+    <a class="nav-item" id="userPanBtn" href='{% url 'profile' %}'>
         <span>👤</span>
         <span>پنل کاربری</span>
-    </button>
+    </a>
         <a href="{% url 'customer_logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>
     {% endif %}
 </nav>

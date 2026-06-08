@@ -96,11 +96,11 @@ class CustomerSignupForm(forms.ModelForm):
         fields = ['full_name', 'username', 'phone', 'email', 'password']
 
         widgets = {
-            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'نام کامل'}),
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'نام کاربری'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'تلفن همراه'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'ایمیل'}),
-            'password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'رمز عبور'}),
+            'full_name': forms.TextInput(attrs={'type':'text','class':'auth-input','required':'required','placeholder':'علی محمدی'}),
+            'username': forms.TextInput(attrs={'type':'text','class':'auth-input','required':'required', 'placeholder': 'نام کاربری'}),
+            'phone': forms.TextInput(attrs={'type':'tel','class':'auth-input','required':'required', 'placeholder': '09xxxxxxxxx','pattern':'09[0-9]{9}'}),
+            'email': forms.EmailInput(attrs={'type':'email','class':'auth-input','required':'required', 'placeholder': 'ایمیل'}),
+            'password': forms.PasswordInput(attrs={'type':'password','class':'auth-input', 'placeholder': 'حداقل 4 کاراکتر','minlength':4,'required':'required','id':'signupPasswordInput'}),
         }
         error_messages = {
             'username': {

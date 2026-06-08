@@ -3,7 +3,6 @@
     صفحه ورود مشتری
 {% endblock %}
 {% block content %}
-    <h1>به صفحه ورود مشتری خوش آمدید</h1>
     <div class="auth-header">
         <span class="auth-icon">🔐</span>
         <h2>ورود به حساب</h2>
@@ -34,6 +33,6 @@
 
     <div class="auth-switch">
         حساب ندارید؟
-        <button class="text-btn" onclick="showRegister()">ثبت‌نام کنید</button>
+        <a href="{% url "customer_signup" %}" class="text-btn">ثبت‌نام کنید</a>
     </div>
 {% endblock %}
