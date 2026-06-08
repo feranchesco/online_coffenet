@@ -143,4 +143,13 @@ JALALI_DATE_DEFAULTS = {
         }
     },
 }
+# 👈 اطمینان از تنظیمات CSRF
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_HTTPONLY = False  # جاوااسکریپت بتونه بخونه
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 # settings.py
