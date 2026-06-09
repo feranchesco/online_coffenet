@@ -1,5 +1,5 @@
 import json
-
+from functools import wraps
 from django.contrib.auth.handlers.modwsgi import check_password
 from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
@@ -17,27 +17,9 @@ from django.views.generic import CreateView, FormView
 from .forms import OperatorSignupForm, OperatorLoginForm, CustomerSignupForm, CustomerLoginForm
 from .models import Customer
 from home_module.models import Service, Operator, Transaction
-
-
 # ============================================
 # پنل مشتری
 # ============================================
-def customer_login(request):
-    """ورود مشتری"""
-    if request.method == 'POST':
-        phone = request.POST.get('phone')
-        password = request.POST.get('password')
-
-        user = authenticate(request, username=phone, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('customer_panel')
-        else:
-            messages.error(request, 'شماره تلفن یا رمز عبور اشتباه است')
-
-    return render(request, 'account_module/login.html')
-
-
 class CustomerSignup(CreateView):
     model = Customer
     form_class = CustomerSignupForm
@@ -109,13 +91,15 @@ class OperatorSignup(CreateView):
     model = Operator
     form_class = OperatorSignupForm
     template_name = "account_module/operator_signup.html"
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('operator_panel')
 
     def form_valid(self, form):
         operator = form.save(commit=False)
         operator.set_password(form.cleaned_data['password'])
         operator.specialties = form.cleaned_data['specialties']
         operator.save()
+        self.request.session['operator_id'] = str(operator.id)
+        self.request.session['operator_name'] = operator.full_name
         return redirect(self.success_url)
 
 class OperatorLogin(FormView):

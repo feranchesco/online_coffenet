@@ -16,7 +16,7 @@
         <div class="input-group">
             <label class="input-label">👤 نام و نام خانوادگی</label>
             {{ form.full_name }}
-            {{ form.fullname.errors }}
+            {{ form.full_name.errors }}
         </div>
         <div class="input-group">
             <label class="input-label">👤 نام کاربری</label>
@@ -41,8 +41,8 @@
             <div class="password-wrapper">
                 {{ form.password }}
                 <button type="button" class="toggle-password" id="togglePasswordBtn">👁️</button>
-                {{ form.password.errors }}
             </div>
+            {{ form.password.errors }}
         </div>
 
         <button type="submit" class="auth-submit-btn">
@@ -53,13 +53,4 @@
         قبلاً حساب دارید؟
         <a href="{% url 'customer_signup' %}" class="text-btn">وارد شوید</a>
     </div>
-    {#    <form action="{% url 'customer_signup' %}" method="post">#}
-    {#        {% csrf_token %}#}
-    {#        {% for field in form %}#}
-    {#        	{{ field }}#}
-    {#            {{ field.errors }}#}
-    {#            <br>#}
-    {#        {% endfor %}#}
-    {#        <button type="submit">ثبت نام کاربر</button>#}
-    {#    </form>#}
 {% endblock %}

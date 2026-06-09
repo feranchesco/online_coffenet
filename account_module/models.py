@@ -1,5 +1,5 @@
 # account_module/models.py
-
+from PIL.ImImagePlugin import number
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 import uuid
@@ -66,7 +66,7 @@ class Customer(AbstractUser):
         unique=True,
         verbose_name='نام کاربری',
         error_messages={
-            'unique': "این نام کاربری قبلاً ثبت شده است.",
+            'unique': "این نام کاربری قبلاً استفاده شده است.",
         },
     )
     phone = models.CharField(

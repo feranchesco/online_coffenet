@@ -1,21 +1,33 @@
 {% extends "shared/layout.html" %}
 {% block title %}
-    صفحه ورود اپراتور ها
+    صفحه ورود مشتری
 {% endblock %}
-
 {% block content %}
-    <h1>به صفحه ی ورود اپراتور ها خوش آمدید</h1>
-    <form action="{% url "operator_login" %}" method="post">
-    {% csrf_token %}
+    <div class="auth-header">
+        <span class="auth-icon">🔐</span>
+        <h2> ورود به حساب اپراتور</h2>
+        <p class="auth-subtitle">به پنل خود دسترسی پیدا کنید</p>
+    </div>
+    <form class="auth-form" id="loginForm" method="post" action="{% url 'operator_login' %}">
+        {% csrf_token %}
         {{ form.non_field_errors }}
-        {% for field in form %}
-            {{ field }}
-            {{ field.errors }}
-            <br>
-        {% endfor %}
-        <button type="submit"><span>ورود  اپراتور</span></button>
+        <div class="input-group">
+            <label class="input-label">📱 شماره تلفن</label>
+            {{ form.phone }}
+            {{ form.phone.errors }}
+        </div>
 
+        <div class="input-group">
+            <label class="input-label">🔒 رمز عبور</label>
+            <div class="password-wrapper">
+                {{ form.password }}
+                <button type="button" class="toggle-password" id="togglePasswordBtn">👁️</button>
+            </div>
+            {{ form.password.errors }}
+        </div>
+
+        <button type="submit" class="auth-submit-btn">
+            <span>🚀</span> ورود به حساب
+        </button>
     </form>
-
-
 {% endblock %}

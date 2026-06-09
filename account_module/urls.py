@@ -9,8 +9,8 @@ urlpatterns = [
     # path('signup/', views.signup, name='signup'),
     path('admin/', admin.site.urls),
     # احراز هویت
-    path('cu-login/', views.CustomerLogin.as_view(), name='customer_login'),
-    path('cu-signup/', views.CustomerSignup.as_view(), name='customer_signup'),
+    path('login/', views.CustomerLogin.as_view(), name='customer_login'),
+    path('signup/', views.CustomerSignup.as_view(), name='customer_signup'),
     path('logout/', views.customer_logout, name='customer_logout'),
     path('profile/', views.profile, name='profile'),  # ✅ جدید
     # اپراتور
