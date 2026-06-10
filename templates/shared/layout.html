@@ -29,7 +29,7 @@
             <button class="nav-item" id="navPan"><span>📊</span><span>پنل جنگو</span></button>
             <a href="{% url 'admin_dashboard' %}" class="nav-item"><span>👑</span><span>پنل مدیریت</span></a>
         {% endif %}
-        <a href="{% url 'customer_logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>
+        <a href="{% url 'logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>
     {% endif %}
     {% if request.session.operator_id %}
         <a href="/" id="homeBtn" class="nav-item"><span>🏠</span><span>خانه</span></a>
@@ -37,7 +37,7 @@
             <span>👨‍💼</span>
             <span>پنل اپراتور</span>
         </a>
-        <a href="{% url 'operator_logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>
+        <a href="{% url 'logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>
     {% endif %}
 </nav>
 {% include "shared/site_footer_references.html" %}

@@ -11,7 +11,7 @@ urlpatterns = [
     # احراز هویت
     path('login/', views.CustomerLogin.as_view(), name='customer_login'),
     path('signup/', views.CustomerSignup.as_view(), name='customer_signup'),
-    path('logout/', views.customer_logout, name='customer_logout'),
+    path('logout/', views.user_logout, name='logout'),
     path('profile/', views.profile, name='profile'),  # ✅ جدید
     # اپراتور
     # ============================================
@@ -20,7 +20,6 @@ urlpatterns = [
     path('op-panel/', views.operator_panel, name='operator_panel'),
     path('op-signup/', views.OperatorSignup.as_view(), name='operator_signup'),
     path('op-login/', views.OperatorLogin.as_view(), name='operator_login'),
-    path('op-logout/', views.operator_logout, name='operator_logout'),
 
     # API های اپراتور
     path('op-api/accept/<uuid:service_id>/', views.operator_accept_service, name='op_accept'),

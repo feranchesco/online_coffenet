@@ -5,271 +5,272 @@
 {% block title %}پنل کاربری | کافی نت آنلاین{% endblock %}
 
 {% block extera_css %}
-    <link rel="stylesheet" href="{% static 'css/user_profile.css' %}">
+    <link rel="stylesheet" href="/static/css/user_profile.css">
 {% endblock %}
 
 {% block content %}
-<!-- دکمه برگشت -->
-<a href="{% url 'home' %}" class="back-btn" title="بازگشت به خانه">⬅️</a>
+    <!-- دکمه برگشت -->
+    <a href="{% url 'home' %}" class="back-btn" title="بازگشت به خانه">⬅️</a>
 
-<div class="main-container">
-    <!-- هدر پنل کاربری -->
-    <div class="panel-header">
-        <div class="user-avatar">👤</div>
-        <div class="user-info">
-            <div class="user-name">{{ customer.full_name }}</div>
-            <div class="user-phone">📱 {{ customer.phone }}</div>
-            <div class="user-status">🟢 حساب فعال</div>
-        </div>
-    </div>
-
-    <!-- کیف پول -->
-    <div class="wallet-card">
-        <div class="wallet-info">
-            <div class="wallet-icon">💰</div>
-            <div>
-                <div class="wallet-balance" id="walletBalance">{{ customer.wallet_balance|default:0 }} تومان</div>
-                <div class="wallet-label">اعتبار کیف پول</div>
+    <div class="main-container">
+        <!-- هدر پنل کاربری -->
+        <div class="panel-header">
+            <div class="user-avatar">👤</div>
+            <div class="user-info">
+                <div class="user-name">{{ customer.full_name }}</div>
+                <div class="user-phone">📱 {{ customer.phone }}</div>
+                <div class="user-status">🟢 حساب فعال</div>
             </div>
         </div>
-        <button class="wallet-btn" onclick="showModal('💳 افزایش اعتبار (به زودی)', '💰')">➕ شارژ</button>
+
+        <!-- کیف پول -->
+        <div class="wallet-card">
+            <div class="wallet-info">
+                <div class="wallet-icon">💰</div>
+                <div>
+                    <div class="wallet-balance" id="walletBalance">{{ customer.wallet_balance|default:0 }} تومان</div>
+                    <div class="wallet-label">اعتبار کیف پول</div>
+                </div>
+            </div>
+            <button class="wallet-btn" onclick="showModal('💳 افزایش اعتبار (به زودی)', '💰')">➕ شارژ</button>
+        </div>
+
+        <!-- تب‌ها -->
+        <div class="panel-tabs">
+            <button class="tab-btn active" onclick="switchTab('active')">
+                📋 سفارشات فعال
+                <span class="tab-badge" id="activeBadge" style="display:none;">0</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('completed')">
+                ✅ تکمیل شده
+            </button>
+            <button class="tab-btn" onclick="switchTab('history')">
+                📜 تاریخچه
+            </button>
+        </div>
+
+        <!-- محتوای تب‌ها -->
+        <div id="tabContent">
+            <div class="chat-loading">⏳ در حال بارگذاری...</div>
+        </div>
     </div>
 
-    <!-- تب‌ها -->
-    <div class="panel-tabs">
-        <button class="tab-btn active" onclick="switchTab('active')">
-            📋 سفارشات فعال
-            <span class="tab-badge" id="activeBadge" style="display:none;">0</span>
-        </button>
-        <button class="tab-btn" onclick="switchTab('completed')">
-            ✅ تکمیل شده
-        </button>
-        <button class="tab-btn" onclick="switchTab('history')">
-            📜 تاریخچه
-        </button>
+    <!-- مودال عمومی -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <div style="font-size:2.5rem;" id="modalIcon">✨</div>
+            <p id="modalMessage">پیام</p>
+            <button class="close-modal" onclick="hideModal()">باشه</button>
+        </div>
     </div>
-
-    <!-- محتوای تب‌ها -->
-    <div id="tabContent">
-        <div class="chat-loading">⏳ در حال بارگذاری...</div>
-    </div>
-</div>
-
-<!-- مودال عمومی -->
-<div class="modal-overlay" id="modalOverlay">
-    <div class="modal-box">
-        <div style="font-size:2.5rem;" id="modalIcon">✨</div>
-        <p id="modalMessage">پیام</p>
-        <button class="close-modal" onclick="hideModal()">باشه</button>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// ============================================
-// داده‌ها از سرور
-// ============================================
-const SERVICES_JSON = '{{ services|escapejs }}';
-let servicesData = [];
+    <script>
+        // ============================================
+        // داده‌ها از سرور
+        // ============================================
+        const SERVICES_JSON = '{{ services|escapejs }}';
+        let servicesData = [];
 
-try {
-    servicesData = JSON.parse(SERVICES_JSON);
-    console.log('📊 خدمات بارگذاری شد:', servicesData.length, 'مورد');
-} catch(e) {
-    console.error('خطا در بارگذاری خدمات:', e);
-    servicesData = [];
-}
-
-const csrfToken = '{{ csrf_token }}';
-const customerId = '{{ customer.id }}';
-let currentTab = 'active';
-
-// ============================================
-// توابع کمکی
-// ============================================
-function formatPrice(price) {
-    return Number(price || 0).toLocaleString('fa-IR');
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function showModal(text, icon = '✨') {
-    document.getElementById('modalMessage').textContent = text;
-    document.getElementById('modalIcon').textContent = icon;
-    document.getElementById('modalOverlay').classList.add('active');
-}
-
-function hideModal() {
-    document.getElementById('modalOverlay').classList.remove('active');
-}
-
-function getStatusClass(status) {
-    const classes = {
-        'pending': 'status-pending',
-        'accepted': 'status-progress',
-        'in_progress': 'status-progress',
-        'completed': 'status-done',
-        'delivered': 'status-done',
-        'cancelled': 'status-cancelled',
-        'rejected': 'status-cancelled',
-    };
-    return classes[status] || 'status-pending';
-}
-
-function getStatusIcon(status) {
-    const icons = {
-        'pending': '⏳', 'accepted': '✅', 'in_progress': '⚙️',
-        'completed': '🎉', 'delivered': '📦', 'cancelled': '❌', 'rejected': '🚫',
-    };
-    return icons[status] || '📋';
-}
-
-function formatTime(timestamp) {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now - date;
-    if (diff < 60000) return 'همین الان';
-    if (diff < 3600000) return Math.floor(diff / 60000) + ' دقیقه پیش';
-    if (diff < 86400000) return Math.floor(diff / 3600000) + ' ساعت پیش';
-    return date.toLocaleDateString('fa-IR', { month: 'long', day: 'numeric' });
-}
-
-// ============================================
-// API Calls
-// ============================================
-async function apiCall(url, options = {}) {
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            'X-CSRFToken': csrfToken,
-            'Content-Type': 'application/json',
-            ...(options.headers || {})
+        try {
+            servicesData = JSON.parse(SERVICES_JSON);
+            console.log('📊 خدمات بارگذاری شد:', servicesData.length, 'مورد');
+        } catch (e) {
+            console.error('خطا در بارگذاری خدمات:', e);
+            servicesData = [];
         }
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'خطا');
-    return data;
-}
 
-async function loadChatMessages(serviceId) {
-    try {
-        return await apiCall(`/api/chat/${serviceId}/messages/`);
-    } catch {
-        return { messages: [] };
-    }
-}
+        const csrfToken = '{{ csrf_token }}';
+        const customerId = '{{ customer.id }}';
+        let currentTab = 'active';
 
-async function sendChatMessage(serviceId, content) {
-    return await apiCall(`/api/chat/${serviceId}/send/`, {
-        method: 'POST',
-        body: JSON.stringify({ content })
-    });
-}
+        // ============================================
+        // توابع کمکی
+        // ============================================
+        function formatPrice(price) {
+            return Number(price || 0).toLocaleString('fa-IR');
+        }
 
-// ============================================
-// هدایت به صفحه پرداخت
-// ============================================
-function goToPayment(serviceId) {
-    // 👈 هدایت به صفحه پرداخت
-    window.location.href = `/pay/${serviceId}/`;
-}
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
-function goToWalletPay(serviceId) {
-    // 👈 پرداخت از کیف پول (AJAX)
-    if (confirm('آیا از پرداخت از کیف پول مطمئن هستید؟')) {
-        fetch(`/pay/wallet/${serviceId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken,
-                'Content-Type': 'application/json',
+        function showModal(text, icon = '✨') {
+            document.getElementById('modalMessage').textContent = text;
+            document.getElementById('modalIcon').textContent = icon;
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function hideModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'pending': 'status-pending',
+                'accepted': 'status-progress',
+                'in_progress': 'status-progress',
+                'completed': 'status-done',
+                'delivered': 'status-done',
+                'cancelled': 'status-cancelled',
+                'rejected': 'status-cancelled',
+            };
+            return classes[status] || 'status-pending';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'pending': '⏳', 'accepted': '✅', 'in_progress': '⚙️',
+                'completed': '🎉', 'delivered': '📦', 'cancelled': '❌', 'rejected': '🚫',
+            };
+            return icons[status] || '📋';
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            if (diff < 60000) return 'همین الان';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' دقیقه پیش';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' ساعت پیش';
+            return date.toLocaleDateString('fa-IR', {month: 'long', day: 'numeric'});
+        }
+
+        // ============================================
+        // API Calls
+        // ============================================
+        async function apiCall(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                    ...(options.headers || {})
+                }
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'خطا');
+            return data;
+        }
+
+        async function loadChatMessages(serviceId) {
+            try {
+                return await apiCall(`/api/chat/${serviceId}/messages/`);
+            } catch {
+                return {messages: []};
             }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('walletBalance').textContent = formatPrice(data.new_balance) + ' تومان';
+        }
 
-                // آپدیت سرویس در داده محلی
-                const service = servicesData.find(s => s.id === serviceId);
-                if (service) service.is_paid = true;
+        async function sendChatMessage(serviceId, content) {
+            return await apiCall(`/api/chat/${serviceId}/send/`, {
+                method: 'POST',
+                body: JSON.stringify({content})
+            });
+        }
 
-                showModal('✅ پرداخت با موفقیت انجام شد!', '💳');
-                switchTab(currentTab);
-            } else {
-                showModal('⚠️ ' + (data.error || 'خطا در پرداخت'), '❌');
+        // ============================================
+        // هدایت به صفحه پرداخت
+        // ============================================
+        function goToPayment(serviceId) {
+            // 👈 هدایت به صفحه پرداخت
+            window.location.href = `/pay/${serviceId}/`;
+        }
+
+        function goToWalletPay(serviceId) {
+            // 👈 پرداخت از کیف پول (AJAX)
+            if (confirm('آیا از پرداخت از کیف پول مطمئن هستید؟')) {
+                fetch(`/pay/wallet/${serviceId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json',
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('walletBalance').textContent = formatPrice(data.new_balance) + ' تومان';
+
+                            // آپدیت سرویس در داده محلی
+                            const service = servicesData.find(s => s.id === serviceId);
+                            if (service) service.is_paid = true;
+
+                            showModal('✅ پرداخت با موفقیت انجام شد!', '💳');
+                            switchTab(currentTab);
+                        } else {
+                            showModal('⚠️ ' + (data.error || 'خطا در پرداخت'), '❌');
+                        }
+                    })
+                    .catch(() => showModal('⚠️ خطا در پرداخت', '❌'));
             }
-        })
-        .catch(() => showModal('⚠️ خطا در پرداخت', '❌'));
-    }
-}
+        }
 
-// ============================================
-// رندر چت
-// ============================================
-function renderChatMessages(messages) {
-    if (!messages || messages.length === 0) {
-        return '<div style="text-align:center;color:#b9c2e6;font-size:0.8rem;padding:0.5rem;">هنوز پیامی ارسال نشده</div>';
-    }
+        // ============================================
+        // رندر چت
+        // ============================================
+        function renderChatMessages(messages) {
+            if (!messages || messages.length === 0) {
+                return '<div style="text-align:center;color:#b9c2e6;font-size:0.8rem;padding:0.5rem;">هنوز پیامی ارسال نشده</div>';
+            }
 
-    return messages.map(msg => {
-        const isMine = msg.sender_id === customerId || msg.sender_type === 'customer';
-        return `
+            return messages.map(msg => {
+                const isMine = msg.sender_id === customerId || msg.sender_type === 'customer';
+                return `
             <div class="chat-msg ${isMine ? 'chat-user' : 'chat-operator'}">
                 <div>${escapeHtml(msg.content)}</div>
                 <div class="chat-time">${formatTime(msg.timestamp)}</div>
             </div>
         `;
-    }).join('');
-}
+            }).join('');
+        }
 
-// ============================================
-// رندر تب‌ها
-// ============================================
-async function renderActiveOrders() {
-    const activeServices = servicesData.filter(s =>
-        ['pending', 'accepted', 'in_progress'].includes(s.status)
-    );
+        // ============================================
+        // رندر تب‌ها
+        // ============================================
+        async function renderActiveOrders() {
+            const activeServices = servicesData.filter(s =>
+                ['pending', 'accepted', 'in_progress'].includes(s.status)
+            );
 
-    // بروزرسانی badge
-    const badge = document.getElementById('activeBadge');
-    if (badge) {
-        badge.textContent = activeServices.length;
-        badge.style.display = activeServices.length > 0 ? 'block' : 'none';
-    }
+            // بروزرسانی badge
+            const badge = document.getElementById('activeBadge');
+            if (badge) {
+                badge.textContent = activeServices.length;
+                badge.style.display = activeServices.length > 0 ? 'block' : 'none';
+            }
 
-    const tabContent = document.getElementById('tabContent');
+            const tabContent = document.getElementById('tabContent');
 
-    if (activeServices.length === 0) {
-        tabContent.innerHTML = `
+            if (activeServices.length === 0) {
+                tabContent.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📭</div>
                 <p>هیچ سفارش فعالی ندارید</p>
                 <a href="/" class="refresh-btn" style="display:inline-block;margin-top:1rem;padding:0.7rem 2rem;background:#7c3aed;color:white;border-radius:2rem;text-decoration:none;">➕ ایجاد سفارش جدید</a>
             </div>
         `;
-        return;
-    }
+                return;
+            }
 
-    let html = '';
+            let html = '';
 
-    for (const service of activeServices) {
-        let chatData = { messages: [] };
-        if (service.status !== 'pending') {
-            try {
-                chatData = await loadChatMessages(service.id);
-            } catch(e) {}
-        }
+            for (const service of activeServices) {
+                let chatData = {messages: []};
+                if (service.status !== 'pending') {
+                    try {
+                        chatData = await loadChatMessages(service.id);
+                    } catch (e) {
+                    }
+                }
 
-        const hasOperator = service.operator_name && service.status !== 'pending';
+                const hasOperator = service.operator_name && service.status !== 'pending';
 
-        html += `
+                html += `
             <div class="order-card">
                 <div class="order-header">
                     <div class="order-icon">${getStatusIcon(service.status)}</div>
@@ -324,37 +325,37 @@ async function renderActiveOrders() {
                 </div>
             </div>
         `;
-    }
+            }
 
-    tabContent.innerHTML = html;
+            tabContent.innerHTML = html;
 
-    // اسکرول چت‌ها
-    setTimeout(() => {
-        document.querySelectorAll('.chat-section').forEach(el => {
-            el.scrollTop = el.scrollHeight;
-        });
-    }, 200);
-}
+            // اسکرول چت‌ها
+            setTimeout(() => {
+                document.querySelectorAll('.chat-section').forEach(el => {
+                    el.scrollTop = el.scrollHeight;
+                });
+            }, 200);
+        }
 
-async function renderCompletedOrders() {
-    const completedServices = servicesData.filter(s =>
-        ['completed', 'delivered'].includes(s.status)
-    );
+        async function renderCompletedOrders() {
+            const completedServices = servicesData.filter(s =>
+                ['completed', 'delivered'].includes(s.status)
+            );
 
-    if (completedServices.length === 0) {
-        document.getElementById('tabContent').innerHTML = `
+            if (completedServices.length === 0) {
+                document.getElementById('tabContent').innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📭</div>
                 <p>سفارش تکمیل شده‌ای ندارید</p>
             </div>
         `;
-        return;
-    }
+                return;
+            }
 
-    let html = '';
+            let html = '';
 
-    for (const service of completedServices) {
-        html += `
+            for (const service of completedServices) {
+                html += `
             <div class="order-card">
                 <div class="order-header">
                     <div class="order-icon">${getStatusIcon(service.status)}</div>
@@ -388,27 +389,27 @@ async function renderCompletedOrders() {
                 </div>
             </div>
         `;
-    }
+            }
 
-    document.getElementById('tabContent').innerHTML = html;
-}
+            document.getElementById('tabContent').innerHTML = html;
+        }
 
-function renderHistory() {
-    const historyServices = servicesData.filter(s =>
-        ['delivered', 'cancelled', 'rejected'].includes(s.status)
-    );
+        function renderHistory() {
+            const historyServices = servicesData.filter(s =>
+                ['delivered', 'cancelled', 'rejected'].includes(s.status)
+            );
 
-    if (historyServices.length === 0) {
-        document.getElementById('tabContent').innerHTML = `
+            if (historyServices.length === 0) {
+                document.getElementById('tabContent').innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📜</div>
                 <p>تاریخچه‌ای یافت نشد</p>
             </div>
         `;
-        return;
-    }
+                return;
+            }
 
-    document.getElementById('tabContent').innerHTML = historyServices.map(service => `
+            document.getElementById('tabContent').innerHTML = historyServices.map(service => `
         <div class="history-card">
             <div class="history-icon">${getStatusIcon(service.status)}</div>
             <div class="history-details">
@@ -418,104 +419,104 @@ function renderHistory() {
             <div class="history-price">${formatPrice(service.final_price)} تومان</div>
         </div>
     `).join('');
-}
-
-function switchTab(tab) {
-    currentTab = tab;
-
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    const activeBtn = document.querySelector(`[onclick="switchTab('${tab}')"]`);
-    if (activeBtn) activeBtn.classList.add('active');
-
-    document.getElementById('tabContent').innerHTML = '<div class="chat-loading">⏳ در حال بارگذاری...</div>';
-
-    if (tab === 'active') renderActiveOrders();
-    else if (tab === 'completed') renderCompletedOrders();
-    else if (tab === 'history') renderHistory();
-}
-
-// ============================================
-// چت
-// ============================================
-async function sendMessage(serviceId) {
-    const input = document.getElementById(`chatInput-${serviceId}`);
-    if (!input) return;
-
-    const content = input.value.trim();
-    if (!content) return;
-
-    const sendBtn = input.nextElementSibling;
-    input.disabled = true;
-    if (sendBtn) sendBtn.disabled = true;
-
-    try {
-        const result = await sendChatMessage(serviceId, content);
-        if (result.success) {
-            input.value = '';
-            await refreshChat(serviceId);
-        } else {
-            showModal('⚠️ خطا در ارسال پیام', '❌');
         }
-    } catch (error) {
-        showModal('⚠️ خطا در ارسال پیام', '❌');
-    } finally {
-        input.disabled = false;
-        if (sendBtn) sendBtn.disabled = false;
-        input.focus();
-    }
-}
 
-async function refreshChat(serviceId) {
-    const chatContainer = document.getElementById(`chatMessages-${serviceId}`);
-    if (!chatContainer) return;
+        function switchTab(tab) {
+            currentTab = tab;
 
-    try {
-        const data = await loadChatMessages(serviceId);
-        chatContainer.innerHTML = renderChatMessages(data.messages);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    } catch (error) {
-        console.error('Error refreshing chat:', error);
-    }
-}
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`[onclick="switchTab('${tab}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
 
-// ============================================
-// Event Listeners
-// ============================================
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        hideModal();
-    }
-});
+            document.getElementById('tabContent').innerHTML = '<div class="chat-loading">⏳ در حال بارگذاری...</div>';
 
-// ============================================
-// شروع اولیه
-// ============================================
-(function init() {
-    // badge اولیه
-    const activeCount = servicesData.filter(s =>
-        ['pending', 'accepted', 'in_progress'].includes(s.status)
-    ).length;
-
-    if (activeCount > 0) {
-        const badge = document.getElementById('activeBadge');
-        if (badge) {
-            badge.textContent = activeCount;
-            badge.style.display = 'block';
+            if (tab === 'active') renderActiveOrders();
+            else if (tab === 'completed') renderCompletedOrders();
+            else if (tab === 'history') renderHistory();
         }
-    }
 
-    // رندر تب فعال
-    renderActiveOrders();
+        // ============================================
+        // چت
+        // ============================================
+        async function sendMessage(serviceId) {
+            const input = document.getElementById(`chatInput-${serviceId}`);
+            if (!input) return;
 
-    // رفرش خودکار چت هر ۱۵ ثانیه
-    setInterval(() => {
-        if (currentTab === 'active') {
-            document.querySelectorAll('[id^="chatMessages-"]').forEach(async (el) => {
-                const serviceId = el.id.replace('chatMessages-', '');
-                await refreshChat(serviceId);
-            });
+            const content = input.value.trim();
+            if (!content) return;
+
+            const sendBtn = input.nextElementSibling;
+            input.disabled = true;
+            if (sendBtn) sendBtn.disabled = true;
+
+            try {
+                const result = await sendChatMessage(serviceId, content);
+                if (result.success) {
+                    input.value = '';
+                    await refreshChat(serviceId);
+                } else {
+                    showModal('⚠️ خطا در ارسال پیام', '❌');
+                }
+            } catch (error) {
+                showModal('⚠️ خطا در ارسال پیام', '❌');
+            } finally {
+                input.disabled = false;
+                if (sendBtn) sendBtn.disabled = false;
+                input.focus();
+            }
         }
-    }, 15000);
-})();
-</script>
+
+        async function refreshChat(serviceId) {
+            const chatContainer = document.getElementById(`chatMessages-${serviceId}`);
+            if (!chatContainer) return;
+
+            try {
+                const data = await loadChatMessages(serviceId);
+                chatContainer.innerHTML = renderChatMessages(data.messages);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } catch (error) {
+                console.error('Error refreshing chat:', error);
+            }
+        }
+
+        // ============================================
+        // Event Listeners
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideModal();
+            }
+        });
+
+        // ============================================
+        // شروع اولیه
+        // ============================================
+        (function init() {
+            // badge اولیه
+            const activeCount = servicesData.filter(s =>
+                ['pending', 'accepted', 'in_progress'].includes(s.status)
+            ).length;
+
+            if (activeCount > 0) {
+                const badge = document.getElementById('activeBadge');
+                if (badge) {
+                    badge.textContent = activeCount;
+                    badge.style.display = 'block';
+                }
+            }
+
+            // رندر تب فعال
+            renderActiveOrders();
+
+            // رفرش خودکار چت هر ۱۵ ثانیه
+            setInterval(() => {
+                if (currentTab === 'active') {
+                    document.querySelectorAll('[id^="chatMessages-"]').forEach(async (el) => {
+                        const serviceId = el.id.replace('chatMessages-', '');
+                        await refreshChat(serviceId);
+                    });
+                }
+            }, 15000);
+        })();
+    </script>
 {% endblock %}

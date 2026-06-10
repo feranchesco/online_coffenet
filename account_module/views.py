@@ -8,18 +8,39 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponseForbidden
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.generic import CreateView, FormView
-
+from functools import wraps
 from .forms import OperatorSignupForm, OperatorLoginForm, CustomerSignupForm, CustomerLoginForm
 from .models import Customer
 from home_module.models import Service, Operator, Transaction
+
+# ============================================
+# دکوریتور ها
+# ============================================
+def anonymous_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated or request.session.get('operator_id',default=False):
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+def superuser_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_superuser:
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 # ============================================
 # پنل مشتری
 # ============================================
+@method_decorator(anonymous_required, name='dispatch')
 class CustomerSignup(CreateView):
     model = Customer
     form_class = CustomerSignupForm
@@ -32,7 +53,7 @@ class CustomerSignup(CreateView):
         customer.save()
         login(self.request, customer)
         return redirect(self.success_url)
-
+@method_decorator(anonymous_required, name='dispatch')
 class CustomerLogin(FormView):
     form_class = CustomerLoginForm
     template_name = "account_module/customer_login.html"
@@ -41,13 +62,10 @@ class CustomerLogin(FormView):
         customer = form.cleaned_data['customer']
         login(self.request, customer)
         return redirect(self.success_url)
-
-def customer_logout(request):
+def user_logout(request):
     """خروج مشتری"""
     logout(request)
     return redirect('home')
-
-
 @login_required
 def profile(request):
     customer = request.user
@@ -81,12 +99,10 @@ def profile(request):
     }
 
     return render(request, 'account_module/profile.html', context)
-
-
 # ============================================
 # پنل اپراتور
 # ============================================
-
+@method_decorator(superuser_required, name='dispatch')
 class OperatorSignup(CreateView):
     model = Operator
     form_class = OperatorSignupForm
@@ -101,7 +117,7 @@ class OperatorSignup(CreateView):
         self.request.session['operator_id'] = str(operator.id)
         self.request.session['operator_name'] = operator.full_name
         return redirect(self.success_url)
-
+@method_decorator(anonymous_required, name='dispatch')
 class OperatorLogin(FormView):
     form_class = OperatorLoginForm
     template_name = 'account_module/operator_login.html'
@@ -112,11 +128,6 @@ class OperatorLogin(FormView):
         self.request.session['operator_id'] = str(operator.id)
         self.request.session['operator_name'] = operator.full_name
         return redirect(self.success_url)
-
-def operator_logout(request):
-    """خروج اپراتور"""
-    request.session.flush()
-    return redirect('home')
 
 def get_operator(request):
     """دریافت اپراتور از session"""
