@@ -1,18 +1,13 @@
 import json
-from functools import wraps
-from django.contrib.auth.handlers.modwsgi import check_password
-from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db.models import Q
-from django.core.serializers.json import DjangoJSONEncoder
 from django.views.generic import CreateView, FormView
 from functools import wraps
 from .forms import OperatorSignupForm, OperatorLoginForm, CustomerSignupForm, CustomerLoginForm

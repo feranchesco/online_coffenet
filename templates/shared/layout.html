@@ -13,6 +13,7 @@
 {% block content %}{% endblock %}
 <!-- نوار پایین -->
 <nav class="bottom-nav">
+    <a href="/" id="homeBtn" class="nav-item"><span>🏠</span><span>خانه</span></a>
     {% if not request.user.is_authenticated and not request.session.operator_id %}
         <a href="{% url 'customer_signup' %}" class="nav-item"
            id="navReg"><span>📝</span><span>ثبت‌نام کاربران</span></a>
@@ -20,7 +21,6 @@
         <a href="{% url 'operator_login' %}" class="nav-item" id="navOp"><span>👨‍💼</span><span> ورود اپراتور</span></a>
     {% endif %}
     {% if request.user.is_authenticated %}
-        <a href="/" id="homeBtn" class="nav-item"><span>🏠</span><span>خانه</span></a>
         <a class="nav-item" id="userPanBtn" href='{% url 'profile' %}'>
             <span>👤</span>
             <span>پنل کاربری</span>
@@ -32,7 +32,6 @@
         <a href="{% url 'logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>
     {% endif %}
     {% if request.session.operator_id %}
-        <a href="/" id="homeBtn" class="nav-item"><span>🏠</span><span>خانه</span></a>
         <a class="nav-item" id="userPanBtn" href='{% url 'operator_panel' %}'>
             <span>👨‍💼</span>
             <span>پنل اپراتور</span>
