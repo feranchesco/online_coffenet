@@ -1,8 +1,9 @@
 # home_module/admin.py
 
 from django.contrib import admin
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from .models import  Service, Transaction, HomeService
+from .models import Service, Transaction, HomeService, News
 
 
 # ============================================
@@ -63,6 +64,90 @@ class HomeServiceAdmin(admin.ModelAdmin):
         self.message_user(request, f'{updated} خدمت غیرفعال شدند.')
 
 
+# ============================================
+# 👈 News Admin (جدید)
+# ============================================
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    """پنل مدیریت اخبار"""
+
+    list_display = [
+        'icon', 'title', 'is_active_badge', 'is_pinned',
+        'publish_date_jalali', 'expire_date_jalali', 'order', 'is_active'
+    ]
+    list_filter = ['is_active', 'is_pinned', 'publish_date']
+    search_fields = ['title', 'content', 'summary']
+    ordering = ['-is_pinned', '-publish_date', 'order']
+    list_editable = ['order', 'is_active', 'is_pinned']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('اطلاعات خبر', {
+            'fields': (
+                'title', 'content', 'summary',
+                ('icon', 'image'),
+                'link',
+            )
+        }),
+        ('تنظیمات نمایش', {
+            'fields': (
+                ('is_active', 'is_pinned'),
+                'order',
+            )
+        }),
+        ('تاریخ‌ها', {
+            'fields': (
+                ('publish_date', 'expire_date'),
+                ('created_at', 'updated_at'),
+            )
+        }),
+    )
+
+
+    @admin.display(description='وضعیت')
+    def is_active_badge(self, obj):
+        if obj.is_valid():
+            return mark_safe(
+                '<span style="background:#4ade80;color:white;padding:2px 10px;'
+                'border-radius:10px;font-size:11px;">✅ فعال</span>'
+            )
+        return mark_safe(
+            '<span style="background:#ef4444;color:white;padding:2px 10px;'
+            'border-radius:10px;font-size:11px;">❌ غیرفعال</span>'
+        )
+
+    @admin.display(description='تاریخ انتشار')
+    def publish_date_jalali(self, obj):
+        return obj.publish_date.strftime('%Y/%m/%d %H:%M')
+
+    @admin.display(description='تاریخ انقضا')
+    def expire_date_jalali(self, obj):
+        if obj.expire_date:
+            return obj.expire_date.strftime('%Y/%m/%d')
+        return mark_safe('<span style="color:#94a3b8;">ندارد</span>')
+
+    # اکشن‌ها
+    actions = ['make_active', 'make_inactive', 'make_pinned', 'make_unpinned']
+
+    @admin.action(description='✅ فعال کردن اخبار انتخاب شده')
+    def make_active(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f'{updated} خبر فعال شد.')
+
+    @admin.action(description='❌ غیرفعال کردن اخبار انتخاب شده')
+    def make_inactive(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f'{updated} خبر غیرفعال شد.')
+
+    @admin.action(description='📌 سنجاق کردن اخبار انتخاب شده')
+    def make_pinned(self, request, queryset):
+        updated = queryset.update(is_pinned=True)
+        self.message_user(request, f'{updated} خبر سنجاق شد.')
+
+    @admin.action(description='📌 برداشتن سنجاق از اخبار انتخاب شده')
+    def make_unpinned(self, request, queryset):
+        updated = queryset.update(is_pinned=False)
+        self.message_user(request, f'{updated} خبر از سنجاق خارج شد.')
 # ============================================
 # Service Admin
 # ============================================

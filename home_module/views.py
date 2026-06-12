@@ -6,8 +6,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 import json
-from .models import Transaction
-
+from .models import Transaction, News
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from django.db import models
 def home(request):
     """صفحه اصلی سایت"""
     home_services = HomeService.objects.filter(is_active=True).order_by('order')
@@ -17,7 +19,6 @@ def home(request):
     }
 
     return render(request, 'home_module/home.html', context)
-
 
 def get_home_services_api(request):
     """API برای دریافت خدمات صفحه اصلی"""
@@ -36,7 +37,6 @@ def get_home_services_api(request):
     ]
 
     return JsonResponse({'services': data})
-
 
 @login_required
 @require_POST
@@ -96,35 +96,6 @@ def create_service(request):
             'error': f'خطای سیستمی: {str(e)}'
         }, status=500)
 
-
-# ============================================
-# API های پنل مشتری
-# ============================================
-# @login_required
-# @require_POST
-# def create_service(request):
-#     """ایجاد سرویس جدید توسط مشتری"""
-#     try:
-#         data = json.loads(request.body)
-#
-#         service = Service.objects.create(
-#             customer=request.user,
-#             title=data.get('title'),
-#             description=data.get('description', ''),
-#             customer_note=data.get('note', ''),
-#             price=int(data.get('price', 0)),
-#             priority=data.get('priority', 'medium'),
-#         )
-#
-#         return JsonResponse({
-#             'success': True,
-#             'service_id': str(service.id),
-#             'tracking_code': service.tracking_code,
-#         })
-#     except Exception as e:
-#         return JsonResponse({'success': False, 'error': str(e)}, status=400)
-
-
 @login_required
 @require_POST
 def pay_service(request, service_id):
@@ -162,7 +133,6 @@ def pay_service(request, service_id):
         'new_balance': request.user.wallet_balance,
     })
 
-
 @login_required
 def download_result(request, service_id):
     """دانلود فایل نتیجه"""
@@ -180,7 +150,6 @@ def download_result(request, service_id):
         as_attachment=True,
         filename=service.result_file_name or 'result.pdf'
     )
-
 
 @login_required
 def rate_service(request, service_id):
@@ -216,3 +185,37 @@ def rate_service(request, service_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
+
+from .models import News
+
+
+@require_GET
+def news_list_api(request):
+    """API برای دریافت لیست اخبار فعال"""
+    now = timezone.now()
+
+    # فیلتر اخبار فعال و منقضی نشده
+    news_queryset = News.objects.filter(
+        is_active=True
+    ).filter(
+        models.Q(expire_date__isnull=True) | models.Q(expire_date__gt=now)
+    ).order_by('-is_pinned', '-publish_date')[:10]  # محدود به ۱۰ خبر آخر
+
+    news_data = []
+    for news in news_queryset:
+        news_data.append({
+            'id': str(news.id),
+            'title': news.title,
+            'summary': news.summary or news.content[:150],
+            'icon': news.icon,
+            'link': news.link,
+            'date': news.get_relative_date(),
+            'is_pinned': news.is_pinned,
+            'image': news.image.url if news.image else None,
+        })
+
+    return JsonResponse({
+        'success': True,
+        'news': news_data,
+        'count': len(news_data)
+    })

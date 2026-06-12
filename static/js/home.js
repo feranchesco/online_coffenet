@@ -5,16 +5,6 @@
 (function () {
     'use strict';
 
-    // ==================== دیتاهای استاتیک ====================
-    const newsItems = [
-        {text: "تخفیف ویژه چاپ و پرینت تا پایان هفته", date: "امروز"},
-        {text: "ثبت‌نام آزمون‌های سراسری آغاز شد", date: "دیروز"},
-        {text: "خدمات جدید تایپ و ترجمه در کافی‌نت", date: "۲ روز پیش"},
-        {text: "ساعت کاری کافی‌نت در تابستان افزایش یافت", date: "۳ روز پیش"},
-        {text: "طرح ویژه دانشجویان با ۲۰٪ تخفیف", date: "۴ روز پیش"},
-        {text: "قابلیت رهگیری آنلاین سفارشات فعال شد", date: "هفته گذشته"}
-    ];
-
     // ==================== المنت‌های DOM ====================
     let elements = {};
 
@@ -72,15 +62,95 @@
         if (elements.loginSection) elements.loginSection.style.display = 'none';
     }
 
-    // ==================== اخبار ====================
+   // ==================== اخبار (از سرور) ====================
+    async function loadNews() {
+        try {
+            const response = await fetch('/api/news/');
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const data = await response.json();
+
+            if (data.success && data.news) {
+                // رندر اخبار در هر دو نما
+                renderNews(elements.newsListContainer, data.news);
+                renderNews(elements.newsMobileListContainer, data.news);
+            } else {
+                // خطا یا خبری موجود نیست
+                const emptyNews = [{
+                    title: 'خبری برای نمایش وجود ندارد',
+                    date: '',
+                    icon: '📭',
+                    link: null,
+                    summary: 'لطفاً بعداً مراجعه کنید'
+                }];
+                renderNews(elements.newsListContainer, emptyNews);
+                renderNews(elements.newsMobileListContainer, emptyNews);
+            }
+        } catch (error) {
+            console.error('Error loading news:', error);
+            // در صورت خطا، نمایش خبرهای fallback
+            const fallbackNews = [
+                {
+                    title: 'تخفیف ویژه چاپ و پرینت تا پایان هفته',
+                    date: 'امروز',
+                    icon: '📰',
+                    summary: 'تخفیف ویژه خدمات چاپ'
+                },
+                {
+                    title: 'خدمات جدید تایپ و ترجمه در کافی‌نت',
+                    date: '۲ روز پیش',
+                    icon: '📰',
+                    summary: 'خدمات تایپ و ترجمه'
+                },
+                {
+                    title: 'خطا در بارگذاری اخبار',
+                    date: 'لطفاً صفحه را refresh کنید',
+                    icon: '⚠️',
+                    summary: 'خطا در ارتباط با سرور'
+                }
+            ];
+            renderNews(elements.newsListContainer, fallbackNews);
+            renderNews(elements.newsMobileListContainer, fallbackNews);
+        }
+    }
+
     function renderNews(containerEl, items) {
         if (!containerEl) return;
-        containerEl.innerHTML = items.map(item => `
-            <div class="news-item">
-                <div>${item.text}</div>
-                <div class="news-date">📅 ${item.date}</div>
-            </div>
-        `).join('');
+
+        containerEl.innerHTML = items.map(item => {
+            const newsLink = item.link || '#';
+            const isExternal = item.link && (item.link.startsWith('http://') || item.link.startsWith('https://'));
+            const targetAttr = isExternal ? 'target="_blank" rel="noopener noreferrer"' : '';
+
+            // اضافه کردن کلاس pinned برای خبرهای سنجاق شده
+            const pinnedClass = item.is_pinned ? 'pinned' : '';
+
+            return `
+                <a href="${newsLink}" ${targetAttr} class="news-item ${pinnedClass}" 
+                   style="text-decoration: none; color: inherit; display: block;">
+                    <div class="news-item-header">
+                        <span class="news-icon">${item.icon || '📰'}</span>
+                        <div class="news-text">
+                            <div class="news-title">${item.title || 'بدون عنوان'}</div>
+                            ${item.summary ? `<div class="news-summary">${item.summary}</div>` : ''}
+                        </div>
+                        ${item.is_pinned ? '<span class="pinned-badge">📌</span>' : ''}
+                    </div>
+                    <div class="news-date">
+                        ${item.date ? '📅 ' + item.date : ''}
+                        ${item.is_pinned ? ' • سنجاق شده' : ''}
+                    </div>
+                </a>
+            `;
+        }).join('');
+
+        // اگر خبری لینک داره، از propagation جلوگیری کن (اختیاری)
+        containerEl.querySelectorAll('.news-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                // می‌تونی اینجا tracking یا analytics اضافه کنی
+                console.log('News clicked:', this.querySelector('.news-title')?.textContent);
+            });
+        });
     }
 
     // ==================== خدمات (از سرور) ====================
@@ -298,20 +368,20 @@
         });
     }
 
-    // ==================== مقداردهی اولیه ====================
+ // ==================== مقداردهی اولیه ====================
     function init() {
         cacheElements();
 
-        // چک کردن وجود عناصر مهم
         console.log('عناصر یافت شده:', {
             navReg: !!elements.navReg,
             registerSection: !!elements.registerSection,
-            loginSection: !!elements.loginSection
+            loginSection: !!elements.loginSection,
+            newsSidebar: !!elements.newsListContainer,
+            newsMobile: !!elements.newsMobileListContainer
         });
 
-        // بارگذاری اخبار
-        renderNews(elements.newsListContainer, newsItems);
-        renderNews(elements.newsMobileListContainer, newsItems);
+        // بارگذاری اخبار از سرور
+        loadNews();  // جایگزین renderNews استاتیک
 
         // بارگذاری خدمات
         loadServices();
@@ -319,6 +389,9 @@
         // تنظیم رویدادها
         initFormEvents();
         initGlobalEvents();
+
+        // رفرش خودکار اخبار هر ۵ دقیقه
+        setInterval(loadNews, 5 * 60 * 1000);
     }
 
     // شروع بعد از بارگذاری کامل DOM
@@ -326,5 +399,124 @@
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
+    }
+    // ==================== مدیریت وضعیت دکمه‌ها ====================
+    // آبجکت برای ذخیره تایمرهای غیرفعال بودن دکمه‌ها
+    const disabledButtons = {};
+
+    // فعال کردن دکمه بعد از مدت زمان مشخص
+    function enableButtonAfterDelay(btn, index, delayMs = 60000) {
+        // اگر قبلاً تایمری برای این دکمه وجود داره، پاکش کن
+        if (disabledButtons[index]) {
+            clearTimeout(disabledButtons[index]);
+        }
+
+        // تنظیم تایمر جدید
+        disabledButtons[index] = setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '📋 ثبت سفارش';
+            btn.classList.remove('btn-disabled');
+            delete disabledButtons[index];
+        }, delayMs);
+    }
+
+    // غیرفعال کردن دکمه
+    function disableButton(btn, message = '⏳ لطفاً صبر کنید...') {
+        btn.disabled = true;
+        btn.textContent = message;
+        btn.classList.add('btn-disabled');
+    }
+
+    async function handleOrderClick(event) {
+        const btn = event.currentTarget;
+        const index = parseInt(btn.dataset.index);
+        const svc = servicesList[index];
+        const row = btn.closest('.service-row');
+        const textarea = row?.querySelector('.description-input');
+        const description = textarea?.value || '';
+
+        // بررسی اینکه دکمه قبلاً غیرفعال نشده باشه
+        if (btn.disabled) {
+            return; // اگر غیرفعاله، هیچ کاری نکن
+        }
+
+        // بررسی احراز هویت
+        const isAuthenticated = window.userAuthenticated || false;
+
+        if (!isAuthenticated) {
+            showModal('⚠️ لطفاً ابتدا وارد حساب کاربری خود شوید', '🔐');
+            showLogin();
+            return;
+        }
+
+        // غیرفعال کردن دکمه قبل از ارسال درخواست
+        disableButton(btn, '⏳ در حال ثبت...');
+
+        const csrf = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+        try {
+            const response = await fetch('/api/service/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf,
+                },
+                body: JSON.stringify({
+                    title: svc.title,
+                    description: description || svc.description || '',
+                    price: typeof svc.price === 'number' ? svc.price : 0,
+                    priority: 'medium'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showModal(`✅ سفارش با موفقیت ثبت شد!\nکد پیگیری: ${data.tracking_code}\nمشاهده در پنل کاربری`, '🎉');
+                if (textarea) textarea.value = '';
+
+                // غیرفعال کردن دکمه برای ۱ دقیقه
+                disableButton(btn, '✅ ثبت شد (۶۰ ثانیه)');
+                enableButtonAfterDelay(btn, index, 60000); // 60000 میلی‌ثانیه = ۱ دقیقه
+
+                // آپدیت شمارش معکوس
+                startCountdown(btn, 60);
+            } else {
+                showModal('⚠️ ' + (data.error || 'خطا در ثبت سفارش'), '❌');
+                // در صورت خطا، دکمه رو دوباره فعال کن
+                btn.disabled = false;
+                btn.textContent = '📋 ثبت سفارش';
+                btn.classList.remove('btn-disabled');
+            }
+        } catch (error) {
+            console.error('Order error:', error);
+            showModal('⚠️ خطا در ارتباط با سرور', '❌');
+            // در صورت خطا، دکمه رو دوباره فعال کن
+            btn.disabled = false;
+            btn.textContent = '📋 ثبت سفارش';
+            btn.classList.remove('btn-disabled');
+        }
+    }
+
+    // شمارش معکوس روی دکمه
+    function startCountdown(btn, seconds) {
+        let remaining = seconds;
+
+        const countdownInterval = setInterval(() => {
+            remaining--;
+
+            if (remaining <= 0) {
+                clearInterval(countdownInterval);
+                return;
+            }
+
+            if (!btn.disabled) {
+                // اگر دکمه به هر دلیلی فعال شد، شمارش معکوس رو متوقف کن
+                clearInterval(countdownInterval);
+                return;
+            }
+
+            btn.textContent = `✅ ثبت شد (${remaining} ثانیه)`;
+        }, 1000);
     }
 })();

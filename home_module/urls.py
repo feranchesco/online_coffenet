@@ -22,5 +22,6 @@ urlpatterns = [
     path('api/service/<uuid:service_id>/pay/', views.pay_service, name='pay_service'),
     path('api/service/<uuid:service_id>/download/', views.download_result, name='download_result'),
     path('api/service/<uuid:service_id>/rate/', views.rate_service, name='rate_service'),
+    path('api/news/', views.news_list_api, name='news_list_api'),
 
 ]

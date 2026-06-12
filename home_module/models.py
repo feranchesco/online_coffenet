@@ -1,5 +1,3 @@
-# home_module/models.py
-
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator
@@ -8,6 +6,7 @@ import os
 import json
 from datetime import datetime
 from threading import Lock
+from django.utils import timezone
 from account_module.models import Operator
 
 # ============================================
@@ -237,10 +236,6 @@ class Service(models.Model):
         }
         return colors.get(self.status, '#6b7280')
 
-
-# home_module/models.py
-# این مدل رو به فایل models.py موجود اضافه کنید
-
 class HomeService(models.Model):
     """مدل خدمات نمایش داده شده در صفحه اصلی"""
 
@@ -276,8 +271,6 @@ class HomeService(models.Model):
 # ============================================
 # ServiceChat - مدیریت چت با JSON
 # ============================================
-# home_module/models.py
-
 class ServiceChat:
     """کلاس مدیریت چت برای هر خدمت"""
 
@@ -477,6 +470,7 @@ class ServiceChat:
             "phone": operator.phone
         }
         self._write(data)
+
 # ============================================
 # Transaction Model
 # ============================================
@@ -563,3 +557,72 @@ class Transaction(models.Model):
             code = 'TRX' + ''.join(random.choices(string.digits, k=12))
             if not Transaction.objects.filter(ref_code=code).exists():
                 return code
+
+# ============================================
+# 👈 مدل اخبار (جدید)
+# ============================================
+class News(models.Model):
+    """اخبار و اطلاعیه‌های سایت"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255, verbose_name='عنوان خبر')
+    content = models.TextField(verbose_name='متن خبر')
+    summary = models.CharField(max_length=500, null=True, blank=True, verbose_name='خلاصه')
+    icon = models.CharField(max_length=10, default='📰', verbose_name='آیکون')
+    link = models.URLField(null=True, blank=True, verbose_name='لینک')
+    image = models.ImageField(upload_to='news/', null=True, blank=True, verbose_name='تصویر')
+
+    is_active = models.BooleanField(default=True, verbose_name='فعال')
+    is_pinned = models.BooleanField(default=False, verbose_name='سنجاق شده')
+    order = models.IntegerField(default=0, verbose_name='ترتیب نمایش')
+
+    publish_date = models.DateTimeField(default=timezone.now, verbose_name='تاریخ انتشار')
+    expire_date = models.DateTimeField(null=True, blank=True, verbose_name='تاریخ انقضا')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'news'
+        verbose_name = 'خبر'
+        verbose_name_plural = 'اخبار'
+        ordering = ['-is_pinned', '-publish_date', 'order']
+        indexes = [
+            models.Index(fields=['is_active', 'publish_date']),
+            models.Index(fields=['is_pinned']),
+        ]
+
+    def __str__(self):
+        return self.title
+
+    def is_valid(self):
+        """بررسی اعتبار خبر"""
+        if not self.is_active:
+            return False
+        if self.expire_date and self.expire_date < timezone.now():
+            return False
+        return True
+
+    def get_relative_date(self):
+        """نمایش تاریخ نسبی (امروز، دیروز، ...)"""
+        now = timezone.now()
+        diff = now - self.publish_date
+
+        if diff.days == 0:
+            return 'امروز'
+        elif diff.days == 1:
+            return 'دیروز'
+        elif diff.days == 2:
+            return '۲ روز پیش'
+        elif diff.days == 3:
+            return '۳ روز پیش'
+        elif diff.days == 4:
+            return '۴ روز پیش'
+        elif diff.days < 7:
+            return f'{diff.days} روز پیش'
+        elif diff.days < 14:
+            return 'هفته گذشته'
+        elif diff.days < 30:
+            return f'{diff.days // 7} هفته پیش'
+        else:
+            return self.publish_date.strftime('%Y/%m/%d')

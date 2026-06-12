@@ -21,4 +21,16 @@ urlpatterns = [
     path('api/admin/operators/<uuid:operator_id>/pay/', views.api_pay_operator, name='api_pay_operator'),
 
     path('api/admin/revenue/', views.api_get_revenue, name='api_get_revenue'),
+    path('api/admin/news/', views.admin_news_list_api, name='admin_news_list'),
+    path('api/admin/news/create/', views.admin_news_create_api, name='admin_news_create'),
+    path('api/admin/news/<uuid:news_id>/update/', views.admin_news_update_api, name='admin_news_update'),
+    path('api/admin/news/<uuid:news_id>/delete/', views.admin_news_delete_api, name='admin_news_delete'),
+
+    # API مدیریت خدمات صفحه اصلی
+    path('api/admin/home-services/', views.admin_home_services_list_api, name='admin_home_services_list'),
+    path('api/admin/home-services/create/', views.admin_home_service_create_api, name='admin_home_service_create'),
+    path('api/admin/home-services/<uuid:service_id>/update/', views.admin_home_service_update_api,
+         name='admin_home_service_update'),
+    path('api/admin/home-services/<uuid:service_id>/delete/', views.admin_home_service_delete_api,
+         name='admin_home_service_delete'),
 ]

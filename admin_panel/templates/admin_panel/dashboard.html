@@ -47,11 +47,13 @@
             </div>
         </div>
 
-        <!-- تب‌ها -->
-        <div class="panel-tabs">
-            <button class="tab-btn active" data-tab="projects">📋 همه پروژه‌ها</button>
-            <button class="tab-btn" data-tab="operators">👥 اپراتورها و حقوق</button>
-            <button class="tab-btn" data-tab="revenue">💰 درآمد کل</button>
+        <!-- تب‌های بدون نوار -->
+        <div class="panel-tabs-simple">
+            <button class="tab-btn-simple active" data-tab="projects">📋 پروژه‌ها</button>
+            <button class="tab-btn-simple" data-tab="operators">👥 اپراتورها</button>
+            <button class="tab-btn-simple" data-tab="revenue">💰 درآمد</button>
+            <button class="tab-btn-simple" data-tab="news">📰 اخبار</button>
+            <button class="tab-btn-simple" data-tab="homeServices">🔧 خدمات</button>
         </div>
 
         <!-- محتوای تب‌ها -->
@@ -82,17 +84,17 @@
 
 {% endblock %}
 {% block extra_js %}
-    {#    <script src="/static/js/admin_panel.js"></script>#}
     <script>
         (function () {
+            'use strict';
+            
             // ==================== تنظیمات ====================
             const SITE_OWNERS = ['مهران سبزی', 'دانیال وفادارنژاد', 'ابوالفضل رحمانی'];
-            const COMMISSION_RATE = 0.40;  // 👈 ۴۰ درصد
-            const MIN_WALLET = 200000;     // 👈 حداقل موجودی
+            const COMMISSION_RATE = 0.40;
+            const MIN_WALLET = 200000;
 
             // ==================== CSRF Token ====================
             function getCsrfToken() {
-                // روش ۱: از cookie
                 const cookies = document.cookie.split(';');
                 for (let cookie of cookies) {
                     const [name, value] = cookie.trim().split('=');
@@ -100,18 +102,9 @@
                         return decodeURIComponent(value);
                     }
                 }
-                // روش ۲: از hidden input
                 const input = document.querySelector('[name=csrfmiddlewaretoken]');
                 return input ? input.value : '';
             }
-
-            const csrfToken = getCsrfToken();
-            console.log('CSRF Token:', csrfToken ? '✅ موجود' : '❌ ناموجود');
-
-            // ==================== داده‌ها ====================
-            let projectsData = [];
-            let operatorsData = [];
-            let currentTab = 'projects';
 
             // ==================== المنت‌ها ====================
             const tabContent = document.getElementById('tabContent');
@@ -120,6 +113,9 @@
             const notificationModal = document.getElementById('notificationModal');
             const notificationMessage = document.getElementById('notificationMessage');
 
+            let projectsData = [];
+            let operatorsData = [];
+            let currentTab = 'projects';
             let currentPayOperatorId = null;
             let currentPayOperatorName = null;
             let currentPayAmount = null;
@@ -137,59 +133,75 @@
             }
 
             function showNotification(text, duration = 3000) {
-                notificationMessage.textContent = text;
-                notificationModal.classList.add('active');
-                if (duration > 0) {
-                    setTimeout(hideNotification, duration);
+                if (notificationMessage && notificationModal) {
+                    notificationMessage.textContent = text;
+                    notificationModal.classList.add('active');
+                    if (duration > 0) {
+                        setTimeout(hideNotification, duration);
+                    }
+                } else {
+                    alert(text);
                 }
             }
 
             function hideNotification() {
-                notificationModal.classList.remove('active');
+                if (notificationModal) {
+                    notificationModal.classList.remove('active');
+                }
             }
 
             function showPayConfirm(operatorId, operatorName, amount) {
                 currentPayOperatorId = operatorId;
                 currentPayOperatorName = operatorName;
                 currentPayAmount = amount;
-                payConfirmMessage.textContent =
-                    `پرداخت ${formatMoney(amount)} به «${operatorName}»؟\n` +
-                    `${formatMoney(MIN_WALLET)} در کیف پول باقی می‌ماند.`;
-                payConfirmModal.classList.add('active');
+                if (payConfirmMessage && payConfirmModal) {
+                    payConfirmMessage.textContent =
+                        `پرداخت ${formatMoney(amount)} به «${operatorName}»؟\n` +
+                        `${formatMoney(MIN_WALLET)} در کیف پول باقی می‌ماند.`;
+                    payConfirmModal.classList.add('active');
+                }
             }
 
             function hidePayConfirm() {
-                payConfirmModal.classList.remove('active');
+                if (payConfirmModal) {
+                    payConfirmModal.classList.remove('active');
+                }
                 currentPayOperatorId = null;
             }
 
             function showLoading() {
-                tabContent.innerHTML = '<div style="text-align:center;padding:2rem;color:#b9c2e6;">⏳ در حال بارگذاری...</div>';
+                if (tabContent) {
+                    tabContent.innerHTML = '<div style="text-align:center;padding:2rem;color:#b9c2e6;">⏳ در حال بارگذاری...</div>';
+                }
             }
 
             // ==================== API Calls ====================
             async function apiCall(url, options = {}) {
                 const token = getCsrfToken();
+                
+                const defaultHeaders = {
+                    'X-CSRFToken': token,
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                };
 
                 const response = await fetch(url, {
                     ...options,
                     headers: {
-                        'X-CSRFToken': token,
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
+                        ...defaultHeaders,
                         ...(options.headers || {})
                     },
                     credentials: 'same-origin'
                 });
 
-                // اگر CSRF خطا داد
                 if (response.status === 403) {
                     console.error('CSRF Error - reloading page...');
                     location.reload();
                     throw new Error('CSRF token expired');
                 }
 
-                return await response.json();
+                const data = await response.json();
+                return data;
             }
 
             async function loadProjects() {
@@ -232,7 +244,7 @@
                 }
             }
 
-            // ==================== عملیات‌ها ====================
+            // ==================== عملیات پروژه‌ها ====================
             async function deleteProject(projectId, title) {
                 if (!confirm(`آیا از حذف پروژه "${title}" مطمئن هستید؟\nاین عملیات قابل بازگشت نیست.`)) return;
 
@@ -352,7 +364,6 @@
             }
 
             async function payOperator(operatorId, operatorName, amount) {
-                // بررسی حداقل موجودی
                 if (amount <= MIN_WALLET) {
                     showNotification(
                         `⚠️ مبلغ قابل پرداخت (${formatMoney(amount)}) کمتر از حداقل موجودی (${formatMoney(MIN_WALLET)}) است`,
@@ -394,17 +405,29 @@
 
             // ==================== رندر ====================
             function updateStats() {
-                document.getElementById('totalProjects').textContent = projectsData.length.toLocaleString('fa-IR');
-                document.getElementById('activeProjects').textContent = projectsData.filter(p =>
+                const totalEl = document.getElementById('totalProjects');
+                const activeEl = document.getElementById('activeProjects');
+                const doneEl = document.getElementById('doneProjects');
+                const operatorsEl = document.getElementById('totalOperators');
+                
+                if (totalEl) totalEl.textContent = projectsData.length.toLocaleString('fa-IR');
+                if (activeEl) activeEl.textContent = projectsData.filter(p =>
                     ['pending', 'accepted', 'in_progress'].includes(p.status)
                 ).length.toLocaleString('fa-IR');
-                document.getElementById('doneProjects').textContent = projectsData.filter(p =>
+                if (doneEl) doneEl.textContent = projectsData.filter(p =>
                     ['completed', 'delivered'].includes(p.status)
                 ).length.toLocaleString('fa-IR');
-                document.getElementById('totalOperators').textContent = operatorsData.length.toLocaleString('fa-IR');
+                if (operatorsEl) operatorsEl.textContent = operatorsData.length.toLocaleString('fa-IR');
             }
 
-            function getStatusSelect(project) {
+            function renderAllProjects() {
+                if (!tabContent) return;
+                
+                if (projectsData.length === 0) {
+                    tabContent.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>هیچ پروژه‌ای وجود ندارد</p></div>';
+                    return;
+                }
+
                 const statuses = [
                     {value: 'pending', text: '⏳ در انتظار'},
                     {value: 'accepted', text: '✅ پذیرفته شده'},
@@ -415,88 +438,80 @@
                     {value: 'rejected', text: '🚫 رد شده'},
                 ];
 
-                return `
-            <select onchange="updateStatus('${project.id}', this.value)" 
-                    style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);
-                    border-radius:1rem;padding:0.3rem 0.8rem;font-size:0.75rem;cursor:pointer;">
-                ${statuses.map(s => `
-                    <option value="${s.value}" ${project.status === s.value ? 'selected' : ''}
-                            style="background:#1a1c2e;color:white;">
-                        ${s.text}
-                    </option>
-                `).join('')}
-            </select>
-        `;
-            }
-
-            function renderAllProjects() {
-                if (projectsData.length === 0) {
-                    tabContent.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>هیچ پروژه‌ای وجود ندارد</p></div>';
-                    return;
-                }
-
                 tabContent.innerHTML = projectsData.map(p => {
                     const commission = Math.floor(p.price * COMMISSION_RATE);
                     const isOwner = p.operator_name && (SITE_OWNERS.includes(p.operator_name) || p.is_owner);
                     const netPayable = p.price - commission;
+                    const escapedTitle = escapeHtml(p.title).replace(/'/g, "\\'");
 
                     return `
-            <div class="project-card">
-              <div class="project-header">
-                <div class="project-icon">📋</div>
-                <div class="project-info">
-                  <div class="project-title">
-                    ${escapeHtml(p.title)} 
-                    ${isOwner ? '<span class="owner-tag">مالک</span>' : ''}
-                  </div>
-                  <div class="project-desc">${escapeHtml(p.description || '')}</div>
-                  <div style="font-size:0.7rem;color:#a78bfa;">کد: ${p.tracking_code}</div>
-                </div>
-                ${getStatusSelect(p)}
-              </div>
+                        <div class="project-card">
+                            <div class="project-header">
+                                <div class="project-icon">📋</div>
+                                <div class="project-info">
+                                    <div class="project-title">
+                                        ${escapeHtml(p.title)} 
+                                        ${isOwner ? '<span class="owner-tag">مالک</span>' : ''}
+                                    </div>
+                                    <div class="project-desc">${escapeHtml(p.description || '')}</div>
+                                    <div style="font-size:0.7rem;color:#a78bfa;">کد: ${p.tracking_code}</div>
+                                </div>
+                                <select onchange="window.updateProjectStatus('${p.id}', this.value)" 
+                                        style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);
+                                        border-radius:1rem;padding:0.3rem 0.8rem;font-size:0.75rem;cursor:pointer;">
+                                    ${statuses.map(s => `
+                                        <option value="${s.value}" ${p.status === s.value ? 'selected' : ''}
+                                                style="background:#1a1c2e;color:white;">
+                                            ${s.text}
+                                        </option>
+                                    `).join('')}
+                                </select>
+                            </div>
 
-              <div class="project-detail-row">
-                <span class="project-detail-label">👤 مشتری:</span>
-                <span>${escapeHtml(p.customer_name)}</span>
-              </div>
+                            <div class="project-detail-row">
+                                <span class="project-detail-label">👤 مشتری:</span>
+                                <span>${escapeHtml(p.customer_name)}</span>
+                            </div>
 
-              <div class="project-detail-row">
-                <span class="project-detail-label">🧑‍💻 اپراتور:</span>
-                <span>${p.operator_name || '❌ تعیین نشده'}</span>
-                ${isOwner ? '<span class="owner-tag">صاحب سایت</span>' : ''}
-                <button onclick="assignOp('${p.id}')" 
-                        style="background:#6366f1;color:white;border:none;padding:0.2rem 0.8rem;
-                        border-radius:1rem;font-size:0.7rem;cursor:pointer;margin-right:0.5rem;">
-                  ✏️ تغییر
-                </button>
-              </div>
+                            <div class="project-detail-row">
+                                <span class="project-detail-label">🧑‍💻 اپراتور:</span>
+                                <span>${p.operator_name || '❌ تعیین نشده'}</span>
+                                ${isOwner ? '<span class="owner-tag">صاحب سایت</span>' : ''}
+                                <button onclick="window.assignOperator('${p.id}')" 
+                                        style="background:#6366f1;color:white;border:none;padding:0.2rem 0.8rem;
+                                        border-radius:1rem;font-size:0.7rem;cursor:pointer;margin-right:0.5rem;">
+                                    ✏️ تغییر
+                                </button>
+                            </div>
 
-              <div class="project-detail-row">
-                <span class="project-detail-label">💰 قیمت:</span>
-                <span class="project-price">${formatMoney(p.price)}</span>
-                <span class="commission-badge">🏛️ کمیسیون ${COMMISSION_RATE * 100}٪: ${formatMoney(commission)}</span>
-                ${p.operator_name && !isOwner ? `<span class="commission-badge">💵 قابل پرداخت: ${formatMoney(netPayable)}</span>` : ''}
-                ${isOwner ? '<span class="commission-badge" style="background:rgba(251,191,36,0.2);color:#fbbf24;">👑 بدون کمیسیون</span>' : ''}
-              </div>
+                            <div class="project-detail-row">
+                                <span class="project-detail-label">💰 قیمت:</span>
+                                <span class="project-price">${formatMoney(p.price)}</span>
+                                <span class="commission-badge">🏛️ کمیسیون ${COMMISSION_RATE * 100}٪: ${formatMoney(commission)}</span>
+                                ${p.operator_name && !isOwner ? `<span class="commission-badge">💵 قابل پرداخت: ${formatMoney(netPayable)}</span>` : ''}
+                                ${isOwner ? '<span class="commission-badge" style="background:rgba(251,191,36,0.2);color:#fbbf24;">👑 بدون کمیسیون</span>' : ''}
+                            </div>
 
-              <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.5rem;">
-                <button onclick="editProj('${p.id}')" 
-                        style="background:#6366f1;color:white;border:none;padding:0.4rem 1rem;
-                        border-radius:1.5rem;font-size:0.75rem;cursor:pointer;">
-                  ✏️ ویرایش
-                </button>
-                <button onclick="deleteProj('${p.id}', '${escapeHtml(p.title).replace(/'/g, "\\'")}')" 
-                        style="background:#ef4444;color:white;border:none;padding:0.4rem 1rem;
-                        border-radius:1.5rem;font-size:0.75rem;cursor:pointer;">
-                  🗑️ حذف
-                </button>
-              </div>
-            </div>
-          `;
+                            <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.5rem;">
+                                <button onclick="window.editProject('${p.id}')" 
+                                        style="background:#6366f1;color:white;border:none;padding:0.4rem 1rem;
+                                        border-radius:1.5rem;font-size:0.75rem;cursor:pointer;">
+                                    ✏️ ویرایش
+                                </button>
+                                <button onclick="window.deleteProject('${p.id}', '${escapedTitle}')" 
+                                        style="background:#ef4444;color:white;border:none;padding:0.4rem 1rem;
+                                        border-radius:1.5rem;font-size:0.75rem;cursor:pointer;">
+                                    🗑️ حذف
+                                </button>
+                            </div>
+                        </div>
+                    `;
                 }).join('');
             }
 
             function renderOperators() {
+                if (!tabContent) return;
+                
                 if (operatorsData.length === 0) {
                     tabContent.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>هیچ اپراتوری یافت نشد</p></div>';
                     return;
@@ -510,115 +525,455 @@
 
                 tabContent.innerHTML = sorted.map(op => {
                     const canPay = op.can_pay && op.net_payable > MIN_WALLET;
+                    const escapedName = escapeHtml(op.name).replace(/'/g, "\\'");
 
                     return `
-            <div class="operator-salary-card ${op.is_owner ? 'owner' : ''}">
-              <div class="op-avatar ${op.is_owner ? 'owner-avatar' : 'normal-avatar'}">
-                ${op.is_owner ? '👑' : '🧑‍💻'}
-              </div>
-              <div class="op-details">
-                <div class="op-name ${op.is_owner ? 'owner-name' : ''}">
-                  ${escapeHtml(op.name)}
-                  ${op.is_owner ? '<span class="owner-tag">صاحب سایت</span>' : ''}
-                </div>
-                <div class="op-stats">
-                  📋 ${op.completed_jobs} کار | 
-                  💰 درآمد کل: ${formatMoney(op.total_earned)} |
-                  🏛️ کمیسیون (${COMMISSION_RATE * 100}٪): ${formatMoney(op.commission)}
-                </div>
-                <div class="op-stats" style="color:#4ade80;">
-                  💵 خالص پرداختی: ${formatMoney(op.net_payable)} |
-                  🏦 موجودی کیف پول: ${formatMoney(op.wallet_balance)}
-                </div>
-              </div>
-              <div class="op-earnings">
-                ${formatMoney(op.net_payable)}
-                <div class="op-commission" style="font-size:0.7rem;">
-                  ${op.net_payable > MIN_WALLET ?
-                        `📤 قابل برداشت: ${formatMoney(op.net_payable - MIN_WALLET)}` :
-                        `⚠️ کمتر از حداقل (${formatMoney(MIN_WALLET)})`}
-                </div>
-              </div>
-              <button
-                class="pay-btn ${!canPay ? 'paid' : ''}"
-                onclick="${canPay ? `payOp('${op.id}', '${escapeHtml(op.name).replace(/'/g, "\\'")}', ${op.net_payable})` : ''}"
-                ${!canPay ? 'disabled' : ''}
-              >
-                ${op.is_paid ? '✅ تسویه شد' :
-                        op.net_payable <= MIN_WALLET ? `🔒 زیر ${formatMoney(MIN_WALLET)}` :
-                            '💳 پرداخت'}
-              </button>
-            </div>
-          `;
+                        <div class="operator-salary-card ${op.is_owner ? 'owner' : ''}">
+                            <div class="op-avatar ${op.is_owner ? 'owner-avatar' : 'normal-avatar'}">
+                                ${op.is_owner ? '👑' : '🧑‍💻'}
+                            </div>
+                            <div class="op-details">
+                                <div class="op-name ${op.is_owner ? 'owner-name' : ''}">
+                                    ${escapeHtml(op.name)}
+                                    ${op.is_owner ? '<span class="owner-tag">صاحب سایت</span>' : ''}
+                                </div>
+                                <div class="op-stats">
+                                    📋 ${op.completed_jobs} کار | 
+                                    💰 درآمد کل: ${formatMoney(op.total_earned)} |
+                                    🏛️ کمیسیون (${COMMISSION_RATE * 100}٪): ${formatMoney(op.commission)}
+                                </div>
+                                <div class="op-stats" style="color:#4ade80;">
+                                    💵 خالص پرداختی: ${formatMoney(op.net_payable)} |
+                                    🏦 موجودی کیف پول: ${formatMoney(op.wallet_balance)}
+                                </div>
+                            </div>
+                            <div class="op-earnings">
+                                ${formatMoney(op.net_payable)}
+                                <div class="op-commission" style="font-size:0.7rem;">
+                                    ${op.net_payable > MIN_WALLET ?
+                                        `📤 قابل برداشت: ${formatMoney(op.net_payable - MIN_WALLET)}` :
+                                        `⚠️ کمتر از حداقل (${formatMoney(MIN_WALLET)})`}
+                                </div>
+                            </div>
+                            <button
+                                class="pay-btn ${!canPay ? 'paid' : ''}"
+                                onclick="${canPay ? `window.payOperator('${op.id}', '${escapedName}', ${op.net_payable})` : ''}"
+                                ${!canPay ? 'disabled' : ''}
+                            >
+                                ${op.is_paid ? '✅ تسویه شد' :
+                                        op.net_payable <= MIN_WALLET ? `🔒 زیر ${formatMoney(MIN_WALLET)}` :
+                                            '💳 پرداخت'}
+                            </button>
+                        </div>
+                    `;
                 }).join('');
             }
 
             async function renderRevenue() {
+                if (!tabContent) return;
+                
                 const revenue = await loadRevenue();
 
                 tabContent.innerHTML = `
-          <div class="revenue-section">
-            <div class="revenue-title">💰 درآمد کل سایت (کمیسیون ${revenue.commission_rate || 40}٪)</div>
-            <div class="revenue-grid">
-              <div class="revenue-card">
-                <div class="revenue-value">${formatMoney(revenue.monthly_revenue || 0)}</div>
-                <div class="revenue-label">📅 درآمد ماهانه</div>
-              </div>
-              <div class="revenue-card">
-                <div class="revenue-value gold">${formatMoney(revenue.yearly_revenue || 0)}</div>
-                <div class="revenue-label">📆 درآمد سالانه (تخمینی)</div>
-              </div>
-              <div class="revenue-card">
-                <div class="revenue-value gold">${formatMoney(revenue.total_commission || 0)}</div>
-                <div class="revenue-label">🏛️ کل کمیسیون</div>
-              </div>
-              <div class="revenue-card">
-                <div class="revenue-value">${formatMoney(revenue.actual_commission || 0)}</div>
-                <div class="revenue-label">💵 کمیسیون قابل تقسیم</div>
-              </div>
-            </div>
-          </div>
+                    <div class="revenue-section">
+                        <div class="revenue-title">💰 درآمد کل سایت (کمیسیون ${revenue.commission_rate || 40}٪)</div>
+                        <div class="revenue-grid">
+                            <div class="revenue-card">
+                                <div class="revenue-value">${formatMoney(revenue.monthly_revenue || 0)}</div>
+                                <div class="revenue-label">📅 درآمد ماهانه</div>
+                            </div>
+                            <div class="revenue-card">
+                                <div class="revenue-value gold">${formatMoney(revenue.yearly_revenue || 0)}</div>
+                                <div class="revenue-label">📆 درآمد سالانه (تخمینی)</div>
+                            </div>
+                            <div class="revenue-card">
+                                <div class="revenue-value gold">${formatMoney(revenue.total_commission || 0)}</div>
+                                <div class="revenue-label">🏛️ کل کمیسیون</div>
+                            </div>
+                            <div class="revenue-card">
+                                <div class="revenue-value">${formatMoney(revenue.actual_commission || 0)}</div>
+                                <div class="revenue-label">💵 کمیسیون قابل تقسیم</div>
+                            </div>
+                        </div>
+                    </div>
 
-          <div class="revenue-section" style="margin-top:1rem;">
-            <div class="revenue-title">👑 سهم صاحبان سایت</div>
-            <div class="revenue-grid">
-              ${(revenue.owners || []).map(owner => `
-                <div class="revenue-card" style="border-color:rgba(251,191,36,0.3);">
-                  <div style="font-size:1.2rem;font-weight:700;color:#fbbf24;">👑 ${escapeHtml(owner.name)}</div>
-                  <div class="revenue-value" style="font-size:1.2rem;">${formatMoney(owner.share)}</div>
-                  <div class="revenue-label">سهم از کمیسیون</div>
-                  <div style="font-size:0.8rem;color:#4ade80;margin-top:0.4rem;">💼 درآمد کارهای خود: ${formatMoney(owner.own_revenue)}</div>
-                  <div style="font-size:0.9rem;font-weight:700;color:#fbbf24;margin-top:0.2rem;">👑 کل: ${formatMoney(owner.total)}</div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
+                    <div class="revenue-section" style="margin-top:1rem;">
+                        <div class="revenue-title">👑 سهم صاحبان سایت</div>
+                        <div class="revenue-grid">
+                            ${(revenue.owners || []).map(owner => `
+                                <div class="revenue-card" style="border-color:rgba(251,191,36,0.3);">
+                                    <div style="font-size:1.2rem;font-weight:700;color:#fbbf24;">👑 ${escapeHtml(owner.name)}</div>
+                                    <div class="revenue-value" style="font-size:1.2rem;">${formatMoney(owner.share)}</div>
+                                    <div class="revenue-label">سهم از کمیسیون</div>
+                                    <div style="font-size:0.8rem;color:#4ade80;margin-top:0.4rem;">💼 درآمد کارهای خود: ${formatMoney(owner.own_revenue)}</div>
+                                    <div style="font-size:0.9rem;font-weight:700;color:#fbbf24;margin-top:0.2rem;">👑 کل: ${formatMoney(owner.total)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
             }
 
-            // ==================== توابع گلوبال ====================
-            window.deleteProj = deleteProject;
-            window.updateStatus = updateProjectStatus;
-            window.assignOp = assignOperator;
-            window.editProj = editProject;
-            window.payOp = payOperator;
+            // ==================== مدیریت اخبار ====================
+            async function loadNewsForAdmin() {
+                try {
+                    const data = await apiCall('/api/admin/news/');
+                    return data.news || [];
+                } catch (e) {
+                    console.error('Error loading news:', e);
+                    return [];
+                }
+            }
 
-            // ==================== ایونت‌ها ====================
-            document.getElementById('payConfirmYes').addEventListener('click', confirmPayOperator);
-            document.getElementById('payConfirmNo').addEventListener('click', hidePayConfirm);
+            async function createNews() {
+                const title = prompt('📰 عنوان خبر:');
+                if (!title) return;
+                
+                const content = prompt('📝 متن خبر:');
+                const summary = prompt('📋 خلاصه (اختیاری):');
+                const icon = prompt('🎨 آیکون (پیش‌فرض 📰):', '📰');
+                const link = prompt('🔗 لینک (اختیاری):');
+                const isPinned = confirm('📌 خبر سنجاق شده باشد؟');
+                
+                try {
+                    const result = await apiCall('/api/admin/news/create/', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            title: title,
+                            content: content || '',
+                            summary: summary || '',
+                            icon: icon || '📰',
+                            link: link || '',
+                            is_pinned: isPinned,
+                            is_active: true,
+                            order: 0,
+                            publish_date: new Date().toISOString()
+                        })
+                    });
+                    
+                    if (result.success) {
+                        showNotification('✅ ' + result.message);
+                        await renderNewsAdmin();
+                    } else {
+                        showNotification('❌ ' + (result.error || 'خطا'));
+                    }
+                } catch (e) {
+                    showNotification('❌ خطا در ایجاد خبر');
+                }
+            }
 
-            payConfirmModal.addEventListener('click', (e) => {
+            async function editNews(newsId) {
+                const newsList = await loadNewsForAdmin();
+                const news = newsList.find(n => n.id === newsId);
+                if (!news) return;
+                
+                const title = prompt('عنوان جدید:', news.title);
+                if (title === null) return;
+                
+                const content = prompt('متن جدید:', news.content);
+                if (content === null) return;
+                
+                const summary = prompt('خلاصه:', news.summary);
+                if (summary === null) return;
+                
+                const icon = prompt('آیکون:', news.icon);
+                if (icon === null) return;
+                
+                const isActive = confirm('خبر فعال باشد؟ (OK=بله, Cancel=خیر)');
+                const isPinned = confirm('خبر سنجاق شده باشد؟');
+                
+                try {
+                    const result = await apiCall(`/api/admin/news/${newsId}/update/`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            title: title.trim(),
+                            content: content,
+                            summary: summary,
+                            icon: icon,
+                            is_active: isActive,
+                            is_pinned: isPinned
+                        })
+                    });
+                    
+                    if (result.success) {
+                        showNotification('✅ ' + result.message);
+                        await renderNewsAdmin();
+                    } else {
+                        showNotification('❌ ' + (result.error || 'خطا'));
+                    }
+                } catch (e) {
+                    showNotification('❌ خطا در ویرایش خبر');
+                }
+            }
+
+            async function deleteNews(newsId) {
+                if (!confirm('آیا از حذف این خبر مطمئن هستید؟')) return;
+                
+                try {
+                    const result = await apiCall(`/api/admin/news/${newsId}/delete/`, {
+                        method: 'POST',
+                        body: JSON.stringify({})
+                    });
+                    
+                    if (result.success) {
+                        showNotification('✅ ' + result.message);
+                        await renderNewsAdmin();
+                    } else {
+                        showNotification('❌ ' + (result.error || 'خطا'));
+                    }
+                } catch (e) {
+                    showNotification('❌ خطا در حذف خبر');
+                }
+            }
+
+            async function toggleNewsActive(newsId, currentStatus) {
+                try {
+                    const result = await apiCall(`/api/admin/news/${newsId}/update/`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            is_active: !currentStatus
+                        })
+                    });
+                    
+                    if (result.success) {
+                        showNotification('✅ ' + result.message);
+                        await renderNewsAdmin();
+                    } else {
+                        showNotification('❌ ' + (result.error || 'خطا'));
+                    }
+                } catch (e) {
+                    showNotification('❌ خطا در تغییر وضعیت خبر');
+                }
+            }
+
+            async function renderNewsAdmin() {
+                if (!tabContent) return;
+                
+                const newsList = await loadNewsForAdmin();
+                
+                if (newsList.length === 0) {
+                    tabContent.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <p>هیچ خبری وجود ندارد</p>
+                            <button onclick="window.createNews()" class="add-new-btn">➕ افزودن خبر جدید</button>
+                        </div>`;
+                    return;
+                }
+                
+                tabContent.innerHTML = `
+                    <div style="margin-bottom: 1rem; text-align: left;">
+                        <button onclick="window.createNews()" class="add-new-btn">➕ خبر جدید</button>
+                    </div>
+                    ${newsList.map(news => `
+                        <div class="news-admin-card ${news.is_pinned ? 'pinned' : ''} ${!news.is_active ? 'inactive' : ''}">
+                            <div class="news-admin-header">
+                                <span class="news-admin-icon">${news.icon}</span>
+                                <div class="news-admin-info">
+                                    <div class="news-admin-title">
+                                        ${escapeHtml(news.title)}
+                                        ${news.is_pinned ? '<span class="pinned-badge-admin">📌 سنجاق شده</span>' : ''}
+                                        ${!news.is_active ? '<span class="inactive-badge">غیرفعال</span>' : ''}
+                                    </div>
+                                    <div class="news-admin-summary">${escapeHtml(news.summary || news.content.substring(0, 100))}</div>
+                                    <div class="news-admin-dates">
+                                        📅 انتشار: ${news.relative_date} 
+                                        ${news.expire_date ? `| ⏰ انقضا: ${news.expire_date}` : '| ♾️ بدون انقضا'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="news-admin-actions">
+                                <button onclick="window.editNews('${news.id}')" class="action-btn edit">✏️ ویرایش</button>
+                                <button onclick="window.deleteNews('${news.id}')" class="action-btn delete">🗑️ حذف</button>
+                                <button onclick="window.toggleNewsActive('${news.id}', ${news.is_active})" 
+                                        class="action-btn ${news.is_active ? 'deactivate' : 'activate'}">
+                                    ${news.is_active ? '👁️ غیرفعال' : '🔒 فعال'}
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            }
+
+            // ==================== مدیریت خدمات صفحه اصلی ====================
+            async function loadHomeServicesForAdmin() {
+                try {
+                    const data = await apiCall('/api/admin/home-services/');
+                    return data.services || [];
+                } catch (e) {
+                    console.error('Error loading home services:', e);
+                    return [];
+                }
+            }
+
+            async function createHomeService() {
+                const title = prompt('🔧 عنوان خدمت:');
+                if (!title) return;
+                
+                const description = prompt('📝 توضیحات:');
+                const icon = prompt('🎨 آیکون (اموجی):', '📋');
+                const price = prompt('💰 قیمت (تومان) - ۰ برای "تماس بگیرید":', '0');
+                const isActive = confirm('خدمت فعال باشد؟');
+                
+                try {
+                    const result = await apiCall('/api/admin/home-services/create/', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            title: title,
+                            description: description || '',
+                            icon: icon || '📋',
+                            price: parseInt(price) || 0,
+                            is_active: isActive,
+                            order: 0
+                        })
+                    });
+                    
+                    if (result.success) {
+                        showNotification('✅ ' + result.message);
+                        await renderHomeServicesAdmin();
+                    } else {
+                        showNotification('❌ ' + (result.error || 'خطا'));
+                    }
+                } catch (e) {
+                    showNotification('❌ خطا در ایجاد خدمت');
+                }
+            }
+
+            async function editHomeService(serviceId) {
+                const services = await loadHomeServicesForAdmin();
+                const service = services.find(s => s.id === serviceId);
+                if (!service) return;
+                
+                const title = prompt('عنوان جدید:', service.title);
+                if (title === null) return;
+                
+                const description = prompt('توضیحات:', service.description);
+                if (description === null) return;
+                
+                const icon = prompt('آیکون:', service.icon);
+                if (icon === null) return;
+                
+                const price = prompt('قیمت (تومان):', service.price);
+                if (price === null) return;
+                
+                const isActive = confirm('خدمت فعال باشد؟');
+                
+                try {
+                    const result = await apiCall(`/api/admin/home-services/${serviceId}/update/`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            title: title.trim(),
+                            description: description,
+                            icon: icon,
+                            price: parseInt(price) || 0,
+                            is_active: isActive
+                        })
+                    });
+                    
+                    if (result.success) {
+                        showNotification('✅ ' + result.message);
+                        await renderHomeServicesAdmin();
+                    } else {
+                        showNotification('❌ ' + (result.error || 'خطا'));
+                    }
+                } catch (e) {
+                    showNotification('❌ خطا در ویرایش خدمت');
+                }
+            }
+
+            async function deleteHomeService(serviceId) {
+                if (!confirm('آیا از حذف این خدمت مطمئن هستید؟')) return;
+                
+                try {
+                    const result = await apiCall(`/api/admin/home-services/${serviceId}/delete/`, {
+                        method: 'POST',
+                        body: JSON.stringify({})
+                    });
+                    
+                    if (result.success) {
+                        showNotification('✅ ' + result.message);
+                        await renderHomeServicesAdmin();
+                    } else {
+                        showNotification('❌ ' + (result.error || 'خطا'));
+                    }
+                } catch (e) {
+                    showNotification('❌ خطا در حذف خدمت');
+                }
+            }
+
+            async function renderHomeServicesAdmin() {
+                if (!tabContent) return;
+                
+                const services = await loadHomeServicesForAdmin();
+                
+                if (services.length === 0) {
+                    tabContent.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🔧</div>
+                            <p>هیچ خدمتی تعریف نشده است</p>
+                            <button onclick="window.createHomeService()" class="add-new-btn">➕ افزودن خدمت جدید</button>
+                        </div>`;
+                    return;
+                }
+                
+                tabContent.innerHTML = `
+                    <div style="margin-bottom: 1rem; text-align: left;">
+                        <button onclick="window.createHomeService()" class="add-new-btn">➕ خدمت جدید</button>
+                    </div>
+                    ${services.map(service => `
+                        <div class="service-admin-card ${!service.is_active ? 'inactive' : ''}">
+                            <div class="service-admin-header">
+                                <span class="service-admin-icon">${service.icon}</span>
+                                <div class="service-admin-info">
+                                    <div class="service-admin-title">
+                                        ${escapeHtml(service.title)}
+                                        ${!service.is_active ? '<span class="inactive-badge">غیرفعال</span>' : ''}
+                                    </div>
+                                    <div class="service-admin-desc">${escapeHtml(service.description)}</div>
+                                </div>
+                                <div class="service-admin-price">${service.price_display}</div>
+                            </div>
+                            <div class="service-admin-actions">
+                                <button onclick="window.editHomeService('${service.id}')" class="action-btn edit">✏️ ویرایش</button>
+                                <button onclick="window.deleteHomeService('${service.id}')" class="action-btn delete">🗑️ حذف</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            }
+
+            // ==================== گلوبال کردن توابع ====================
+            window.deleteProject = deleteProject;
+            window.updateProjectStatus = updateProjectStatus;
+            window.assignOperator = assignOperator;
+            window.editProject = editProject;
+            window.payOperator = payOperator;
+            window.createNews = createNews;
+            window.editNews = editNews;
+            window.deleteNews = deleteNews;
+            window.toggleNewsActive = toggleNewsActive;
+            window.createHomeService = createHomeService;
+            window.editHomeService = editHomeService;
+            window.deleteHomeService = deleteHomeService;
+
+            // ==================== رویدادها ====================
+            document.getElementById('payConfirmYes')?.addEventListener('click', confirmPayOperator);
+            document.getElementById('payConfirmNo')?.addEventListener('click', hidePayConfirm);
+            document.getElementById('closeNotificationBtn')?.addEventListener('click', hideNotification);
+
+            payConfirmModal?.addEventListener('click', (e) => {
                 if (e.target === payConfirmModal) hidePayConfirm();
             });
 
-            document.getElementById('closeNotificationBtn').addEventListener('click', hideNotification);
-            notificationModal.addEventListener('click', (e) => {
+            notificationModal?.addEventListener('click', (e) => {
                 if (e.target === notificationModal) hideNotification();
             });
 
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    switchTab(this.dataset.tab);
+            // تب‌های ساده
+            document.querySelectorAll('.tab-btn-simple').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tab = this.dataset.tab;
+                    if (tab) switchTab(tab);
                 });
             });
 
@@ -630,40 +985,46 @@
             });
 
             // ==================== تب‌ها ====================
-            function switchTab(tab) {
+            async function switchTab(tab) {
                 currentTab = tab;
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+                
+                // آپدیت کلاس active
+                document.querySelectorAll('.tab-btn-simple').forEach(b => b.classList.remove('active'));
+                const activeBtn = document.querySelector(`.tab-btn-simple[data-tab="${tab}"]`);
+                if (activeBtn) activeBtn.classList.add('active');
+                
                 showLoading();
 
                 switch (tab) {
                     case 'projects':
-                        renderAllProjects();
+                        await renderAllProjects();
                         break;
                     case 'operators':
-                        renderOperators();
+                        await renderOperators();
                         break;
                     case 'revenue':
-                        renderRevenue();
+                        await renderRevenue();
+                        break;
+                    case 'news':
+                        await renderNewsAdmin();
+                        break;
+                    case 'homeServices':
+                        await renderHomeServicesAdmin();
                         break;
                 }
             }
 
-            window.switchTab = switchTab;
-
             // ==================== لود اولیه ====================
             async function init() {
                 console.log('🚀 Admin Panel Loading...');
-                console.log('CSRF Token:', csrfToken ? '✅' : '❌');
-
+                
                 await Promise.all([loadProjects(), loadOperators()]);
                 updateStats();
-                renderAllProjects();
+                await renderAllProjects();
                 console.log('✅ Admin Panel Ready');
             }
 
             init();
-
         })();
     </script>
 {% endblock %}
