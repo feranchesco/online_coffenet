@@ -10,6 +10,22 @@
     {% include "shared/site_header_references.html" %}
 </head>
 <body>
+{% if messages %}
+    {% for message in messages %}
+        <div class="toast {{ message.tags }}">
+            <span class="toast-icon">
+                {% if message.tags == 'success' %}
+                    ✓
+                {% elif message.tags == 'error' %}
+                    ✕
+                {% endif %}
+            </span>
+            <div class="toast-content">
+                {{ message }}
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
 {% block content %}{% endblock %}
 <!-- نوار پایین -->
 <nav class="bottom-nav">

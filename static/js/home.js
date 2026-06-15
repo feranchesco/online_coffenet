@@ -520,3 +520,15 @@
         }, 1000);
     }
 })();
+
+
+// کنترل نمایش پیغام ها
+
+const toastMessage = document.querySelector(".toast");
+if(toastMessage){
+    toastMessage.classList.add('show');
+    setTimeout(() => {
+        toastMessage.classList.remove('show');
+        toastMessage.remove();
+    },3400);
+}

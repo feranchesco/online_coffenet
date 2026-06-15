@@ -37,12 +37,12 @@
         </div>
 
         <div class="input-group">
-            <label class="input-label"> ایمیل</label>
+            <label class="input-label">نقش </label>
             {{ form.role }}
             {{ form.role.errors }}
         </div>
         <div class="input-group">
-            <label class="input-label"> ایمیل</label>
+            <label class="input-label"> تخصص ها </label>
             {{ form.specialties }}
             {{ form.specialties.errors }}
         </div>
@@ -56,12 +56,19 @@
             {{ form.password.errors }}
         </div>
 
-        <button type="submit" class="auth-submit-btn">
-            <span>✨</span> تکمیل ثبت‌نام
+        <button id="submitBtn" type="submit" class="auth-submit-btn" disabled>
+            <span id="textBtn">✨تکمیل ثبت‌نام</span>
+            <span id="loadingBtn" class="btn-loading" style="display:none;">
+                <span class="spinner"></span>
+                     ✨در حال ثبت‌نام...
+            </span>
         </button>
     </form>
     <div class="auth-switch">
         قبلاً حساب دارید؟
         <a href="{% url 'customer_signup' %}" class="text-btn">وارد شوید</a>
     </div>
+{% endblock %}
+{% block extra_js %}
+    <script src="/static/js/form_handler.js"></script>
 {% endblock %}

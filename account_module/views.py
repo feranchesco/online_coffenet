@@ -13,6 +13,8 @@ from functools import wraps
 from .forms import OperatorSignupForm, OperatorLoginForm, CustomerSignupForm, CustomerLoginForm
 from .models import Customer
 from home_module.models import Service, Operator, Transaction
+from django.contrib import messages
+
 
 # ============================================
 # دکوریتور ها
@@ -45,8 +47,10 @@ class CustomerSignup(CreateView):
     def form_valid(self, form):
         customer = form.save(commit=False)
         customer.set_password(form.cleaned_data['password'])
+        customer.username = form.cleaned_data['phone']
         customer.save()
         login(self.request, customer)
+        messages.success(self.request, 'حساب شما با موفقیت ساخته شد!')
         return redirect(self.success_url)
 @method_decorator(anonymous_required, name='dispatch')
 class CustomerLogin(FormView):
@@ -56,10 +60,12 @@ class CustomerLogin(FormView):
     def form_valid(self, form):
         customer = form.cleaned_data['customer']
         login(self.request, customer)
+        messages.success(self.request, f'{customer.full_name} عزیز خوش آمدید.')
         return redirect(self.success_url)
 def user_logout(request):
     """خروج مشتری"""
     logout(request)
+    messages.error(request, 'شما از سایت خارج شدید.')
     return redirect('home')
 @login_required
 def profile(request):
@@ -102,15 +108,14 @@ class OperatorSignup(CreateView):
     model = Operator
     form_class = OperatorSignupForm
     template_name = "account_module/operator_signup.html"
-    success_url = reverse_lazy('operator_panel')
+    success_url = reverse_lazy('admin_dashboard')
 
     def form_valid(self, form):
         operator = form.save(commit=False)
         operator.set_password(form.cleaned_data['password'])
         operator.specialties = form.cleaned_data['specialties']
         operator.save()
-        self.request.session['operator_id'] = str(operator.id)
-        self.request.session['operator_name'] = operator.full_name
+        messages.success(self.request, f'حساب اپراتور {operator.full_name} باموفقیت ساخته شد!')
         return redirect(self.success_url)
 @method_decorator(anonymous_required, name='dispatch')
 class OperatorLogin(FormView):
@@ -122,6 +127,7 @@ class OperatorLogin(FormView):
         operator = form.cleaned_data['operator']
         self.request.session['operator_id'] = str(operator.id)
         self.request.session['operator_name'] = operator.full_name
+        messages.success(self.request, f'{operator.full_name} عزیز خوش آمدید.')
         return redirect(self.success_url)
 
 def get_operator(request):

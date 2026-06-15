@@ -26,7 +26,7 @@ class OperatorSignupForm(forms.ModelForm):
             'username': forms.TextInput(attrs={'type': 'text', 'class': 'auth-input', 'required': '', 'placeholder': 'نام کاربری'}),
             'phone': forms.TextInput(attrs={'type': 'tel', 'class': 'auth-input', 'required': '', 'placeholder': '09xxxxxxxxx',
                        'pattern': '09[0-9]{9}'}),
-            'email': forms.EmailInput(attrs={'type': 'email', 'class': 'auth-input', 'required': '', 'placeholder': 'ایمیل'}),
+            'email': forms.EmailInput(attrs={'type': 'email', 'class': 'auth-input', 'placeholder': 'ایمیل'}),
             'role': forms.Select(attrs={'class': 'auth-input', 'placeholder': 'نقش'}),
             'password': forms.PasswordInput(attrs={'type': 'password', 'class': 'auth-input', 'placeholder': 'حداقل 4 کاراکتر', 'minlength': 4,
                        'required': '', 'id': 'signupPasswordInput'}),
@@ -95,18 +95,16 @@ class OperatorLoginForm(forms.Form):
 class CustomerSignupForm(forms.ModelForm):
     class Meta:
         model = Customer
-        fields = ['full_name', 'username', 'phone', 'email', 'password']
+        fields = ['full_name', 'phone', 'email', 'password']
 
         widgets = {
             'full_name': forms.TextInput(
                 attrs={'type': 'text', 'class': 'auth-input', 'required': '', 'placeholder': 'علی محمدی'}),
-            'username': forms.TextInput(
-                attrs={'type': 'text', 'class': 'auth-input', 'required': '', 'placeholder': 'نام کاربری'}),
             'phone': forms.TextInput(
                 attrs={'type': 'tel', 'class': 'auth-input', 'required': '', 'placeholder': '09xxxxxxxxx',
                        'pattern': '09[0-9]{9}'}),
             'email': forms.EmailInput(
-                attrs={'type': 'email', 'class': 'auth-input', 'required': '', 'placeholder': 'ایمیل'}),
+                attrs={'type': 'email', 'class': 'auth-input', 'placeholder': 'ایمیل'}),
             'password': forms.PasswordInput(
                 attrs={'type': 'password', 'class': 'auth-input', 'placeholder': 'حداقل 4 کاراکتر', 'minlength': 4,
                        'required': '', 'id': 'signupPasswordInput'}),
@@ -120,9 +118,6 @@ class CustomerSignupForm(forms.ModelForm):
             },
             'phone': {
                 'required': "تلفن همراه را وارد کنید"
-            },
-            'email': {
-                'required': "ایمیل را وارد کنید"
             },
             'password': {
                 'required': "رمز عبور را وارد کنید"

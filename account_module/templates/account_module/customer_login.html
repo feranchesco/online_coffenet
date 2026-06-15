@@ -26,8 +26,12 @@
             {{ form.password.errors }}
         </div>
 
-        <button type="submit" class="auth-submit-btn">
-            <span>🚀</span> ورود به حساب
+        <button id="submitBtn" type="submit" class="auth-submit-btn" disabled>
+            <span id="textBtn">🚀 ورود به حساب</span>
+            <span id="loadingBtn" class="btn-loading" style="display:none;">
+                <span class="spinner"></span>
+                     🚀 در حال ورود...
+            </span>
         </button>
     </form>
 
@@ -35,4 +39,7 @@
         حساب ندارید؟
         <a href="{% url "customer_signup" %}" class="text-btn">ثبت‌نام کنید</a>
     </div>
+{% endblock %}
+{% block extra_js %}
+    <script src="/static/js/form_handler.js"></script>
 {% endblock %}
