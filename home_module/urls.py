@@ -23,5 +23,8 @@ urlpatterns = [
     path('api/service/<uuid:service_id>/download/', views.download_result, name='download_result'),
     path('api/service/<uuid:service_id>/rate/', views.rate_service, name='rate_service'),
     path('api/news/', views.news_list_api, name='news_list_api'),
+    path('ai-chat/', views.ai_chat_page, name='ai_chat_page'),
+    path('api/ai-chat/send/', views.ai_chat_api, name='ai_chat_api'),
+    path('api/ai-chat/history/<uuid:session_id>/', views.get_chat_history, name='ai_chat_history'),
 
 ]

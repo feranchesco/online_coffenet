@@ -1,0 +1,466 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+
+{% block title %}چت بات هوشمند | {{ customer.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+
+    .chat-button {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s;
+        font-size: 28px;
+    }
+
+    .chat-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+    }
+
+    .chat-window {
+        display: none;
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 380px;
+        height: 600px;
+        background: #1e1e2e;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #313244;
+    }
+
+    .chat-window.open {
+        display: flex;
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+    }
+
+    .chat-header .user-info {
+        flex: 1;
+    }
+
+    .chat-header h3 {
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .chat-header .status {
+        font-size: 11px;
+        opacity: 0.9;
+    }
+
+    .close-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        transition: all 0.3s;
+    }
+
+    .close-btn:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .message {
+        display: flex;
+        gap: 8px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+        flex-direction: row-reverse;
+    }
+
+    .message .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .message.bot .avatar {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .message.user .avatar {
+        background: #10b981;
+    }
+
+    .message .content {
+        max-width: 75%;
+        padding: 10px 14px;
+        border-radius: 15px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .message.bot .content {
+        background: #313244;
+        color: #cdd6f4;
+    }
+
+    .message.user .content {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .chat-input {
+        padding: 15px 20px;
+        background: #181825;
+        display: flex;
+        gap: 10px;
+    }
+
+    .chat-input input {
+        flex: 1;
+        padding: 12px 15px;
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 25px;
+        color: #cdd6f4;
+        font-size: 13px;
+    }
+
+    .chat-input input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .chat-input button {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .quick-actions {
+        padding: 10px 20px;
+        background: #181825;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+    }
+
+    .quick-action {
+        padding: 6px 12px;
+        background: #313244;
+        border: 1px solid #45475a;
+        border-radius: 15px;
+        color: #cdd6f4;
+        font-size: 11px;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .quick-action:hover {
+        background: #45475a;
+        border-color: #667eea;
+    }
+
+    .typing-indicator {
+        display: none;
+        padding: 10px 14px;
+        background: #313244;
+        border-radius: 15px;
+        width: fit-content;
+    }
+
+    .typing-indicator.active {
+        display: block;
+    }
+
+    .typing-dots {
+        display: flex;
+        gap: 4px;
+    }
+
+    .typing-dot {
+        width: 6px;
+        height: 6px;
+        background: #6c7086;
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-8px); }
+    }
+
+    @media (max-width: 768px) {
+        .chat-window {
+            width: 100%;
+            height: 100%;
+            bottom: 0;
+            right: 0;
+            border-radius: 0;
+        }
+        
+        .chat-widget {
+            bottom: 10px;
+            right: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ویجت چت -->
+<div class="chat-widget">
+    <!-- دکمه باز کردن چت -->
+    <div class="chat-button" id="chatButton" onclick="toggleChat()">
+        💬
+    </div>
+
+    <!-- پنجره چت -->
+    <div class="chat-window" id="chatWindow">
+        <!-- هدر -->
+        <div class="chat-header">
+            <div class="user-info">
+                <h3>🤖 دستیار هوشمند</h3>
+                <div class="status">🟢 آنلاین | {{ customer.full_name }} عزیز</div>
+            </div>
+            <button class="close-btn" onclick="toggleChat()">✕</button>
+        </div>
+
+        <!-- اکشن‌های سریع -->
+        <div class="quick-actions">
+            <div class="quick-action" onclick="sendQuickMessage('وضعیت خدمات من چطوره؟')">
+                📋 خدمات من
+            </div>
+            <div class="quick-action" onclick="sendQuickMessage('موجودی کیف پولم چقدره؟')">
+                💰 موجودی من
+            </div>
+            <div class="quick-action" onclick="sendQuickMessage('چطور میتونم سرویس جدید ثبت کنم؟')">
+                🆕 سرویس جدید
+            </div>
+            <div class="quick-action" onclick="sendQuickMessage('پشتیبانی میخوام')">
+                🆘 پشتیبانی
+            </div>
+        </div>
+
+        <!-- پیام‌ها -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="avatar">🤖</div>
+                <div class="content">
+                    سلام {{ customer.full_name }} عزیز! 👋<br>
+                    به چت‌بات هوشمند خوش آمدید.<br><br>
+                    💰 موجودی شما: <strong>{{ customer.wallet_balance|default:"۰" }} تومان</strong><br>
+                    📋 خدمات فعال: <strong>{{ active_services_count }}</strong> مورد<br>
+                    ✅ تکمیل شده: <strong>{{ completed_services_count }}</strong> مورد<br><br>
+                    چطور می‌تونم کمکت کنم؟
+                </div>
+            </div>
+        </div>
+
+        <!-- ورودی -->
+        <div class="chat-input">
+            <input 
+                type="text" 
+                id="messageInput" 
+                placeholder="پیام خود را بنویسید..."
+                onkeypress="handleKeyPress(event)"
+            >
+            <button onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+</div>
+
+<!-- بقیه محتوای صفحه -->
+<div class="container mt-5">
+    <!-- محتوای اصلی سایت اینجا قرار میگیره -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentSessionId = null;
+    let isProcessing = false;
+
+    // Toggle chat window
+    function toggleChat() {
+        const window = document.getElementById('chatWindow');
+        window.classList.toggle('open');
+        
+        if (window.classList.contains('open')) {
+            document.getElementById('messageInput').focus();
+        }
+    }
+
+    // Handle Enter key
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    // Send quick message
+    function sendQuickMessage(text) {
+        document.getElementById('messageInput').value = text;
+        sendMessage();
+    }
+
+    // Send message
+    async function sendMessage() {
+        if (isProcessing) return;
+        
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        // Add user message to chat
+        addMessage(message, 'user');
+        
+        // Clear input
+        input.value = '';
+        
+        // Show typing indicator
+        showTyping();
+        isProcessing = true;
+        
+        try {
+            const response = await fetch('/api/ai-chat/send/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: currentSessionId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                currentSessionId = data.session_id;
+                addMessage(data.message.content, 'bot');
+                
+                // اگر هزینه داشت نمایش بده (برای gpt-4o-mini معمولاً خیلی کمه)
+                if (data.cost > 0) {
+                    console.log(`💰 هزینه این پیام: $${data.cost}`);
+                }
+            } else {
+                addMessage('❌ متأسفانه خطایی رخ داد: ' + data.error, 'bot');
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage('❌ خطا در ارتباط با سرور', 'bot');
+        } finally {
+            hideTyping();
+            isProcessing = false;
+            input.focus();
+        }
+    }
+
+    // Add message to chat
+    function addMessage(text, sender) {
+        const container = document.getElementById('chatMessages');
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        
+        const avatar = sender === 'user' ? '👤' : '🤖';
+        const time = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+        
+        messageDiv.innerHTML = `
+            <div class="avatar">${avatar}</div>
+            <div class="content">${text.replace(/\n/g, '<br>')}</div>
+        `;
+        
+        container.appendChild(messageDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // Show typing indicator
+    function showTyping() {
+        const container = document.getElementById('chatMessages');
+        const indicator = document.createElement('div');
+        indicator.className = 'typing-indicator active';
+        indicator.id = 'typingIndicator';
+        indicator.innerHTML = `
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        `;
+        container.appendChild(indicator);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // Hide typing indicator
+    function hideTyping() {
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    // Get CSRF token
+    function getCookie(name) {
+        let value = "; " + document.cookie;
+        let parts = value.split("; " + name + "=");
+        if (parts.length === 2) return parts.pop().split(";").shift();
+    }
+</script>
+{% endblock %}

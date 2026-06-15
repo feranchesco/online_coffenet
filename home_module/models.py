@@ -626,3 +626,78 @@ class News(models.Model):
             return f'{diff.days // 7} هفته پیش'
         else:
             return self.publish_date.strftime('%Y/%m/%d')
+
+
+class ChatSession(models.Model):
+    """مدل ذخیره تاریخچه چت با هوش مصنوعی"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    customer = models.ForeignKey(
+        'account_module.Customer',
+        on_delete=models.CASCADE,
+        related_name='ai_chats',
+        verbose_name='مشتری'
+    )
+    title = models.CharField(max_length=255, default='چت جدید', verbose_name='عنوان چت')
+
+    # تنظیمات چت
+    model_name = models.CharField(
+        max_length=50,
+        default='gpt-4o-mini',
+        verbose_name='مدل هوش مصنوعی'
+    )
+
+    # وضعیت
+    is_active = models.BooleanField(default=True, verbose_name='فعال')
+    total_messages = models.IntegerField(default=0, verbose_name='تعداد پیام‌ها')
+    total_tokens = models.IntegerField(default=0, verbose_name='کل توکن‌های مصرفی')
+
+    # زمان‌بندی
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'ai_chat_sessions'
+        verbose_name = 'جلسه چت هوشمند'
+        verbose_name_plural = 'جلسات چت هوشمند'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.customer.full_name} - {self.title}"
+
+
+class ChatMessage(models.Model):
+    """مدل ذخیره پیام‌های چت"""
+
+    ROLE_CHOICES = [
+        ('user', 'کاربر'),
+        ('assistant', 'دستیار'),
+        ('system', 'سیستم'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(
+        ChatSession,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        verbose_name='جلسه چت'
+    )
+
+    # محتوای پیام
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, verbose_name='نقش')
+    content = models.TextField(verbose_name='متن پیام')
+
+    # اطلاعات اضافی
+    tokens_used = models.IntegerField(default=0, verbose_name='توکن مصرفی')
+    cost = models.FloatField(default=0, verbose_name='هزینه (دلار)')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'ai_chat_messages'
+        verbose_name = 'پیام چت'
+        verbose_name_plural = 'پیام‌های چت'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.get_role_display()}: {self.content[:50]}"

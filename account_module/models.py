@@ -244,3 +244,5 @@ class Operator(models.Model):
         return self.services.filter(
             status__in=['accepted', 'in_progress']
         ).count()
+
+
