@@ -43,6 +43,7 @@ def get_home_services_api(request):
             'title': s.title,
             'description': s.description,
             'price': s.price,
+            'is_price_per_page': s.is_price_per_page,
             'price_display': s.get_price_display(),
         }
         for s in services
@@ -59,10 +60,27 @@ def create_service(request):
     try:
         data = json.loads(request.body)
 
+        service_id = data.get('id')
         title = data.get('title', '').strip()
         description = data.get('description', '').strip()
-        price = int(data.get('price', 0))
+        page_count = int(data.get('pageCount'))
         priority = data.get('priority', 'medium')
+
+        if service_id:
+            home_service = HomeService.objects.filter(id=service_id , is_active=True).first()
+            if home_service:
+                price = home_service.price*page_count if home_service.is_price_per_page else home_service.price
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'سرویس مورد نظر یافت نشد'
+                }, status=400)
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'شناسه ای یافت نشد'
+            }, status=400)
+
 
         if not title:
             return JsonResponse({
@@ -70,17 +88,13 @@ def create_service(request):
                 'error': 'عنوان خدمت الزامی است'
             }, status=400)
 
-        if price < 0:
-            return JsonResponse({
-                'success': False,
-                'error': 'قیمت نمی‌تواند منفی باشد'
-            }, status=400)
 
         service = Service.objects.create(
             customer=request.user,
             title=title,
             description=description,
             customer_note=data.get('note', ''),
+            page_count=page_count,
             price=price,
             priority=priority,
         )

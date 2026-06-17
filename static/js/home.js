@@ -1,7 +1,6 @@
 // ============================================
 // home.js - فایل یکپارچه اسکریپت‌های صفحه اصلی
 // ============================================
-
 (function () {
     'use strict';
 
@@ -40,6 +39,18 @@
         };
     }
 
+     function controlServicePrice() {
+        elements.container?.addEventListener('input', (e) => {
+            if (!e.target.matches("input[type='number']")) return;
+            const index = Number(e.target.dataset.index);
+            const count = Number(e.target.value);
+
+            const totalPrice = count * servicesList[index].price
+            const service = document.getElementById(`service${index}`)
+            service.querySelector('.row-price').textContent = `💲 ${totalPrice.toLocaleString('fa-IR')} تومان `;
+        })
+    }
+
     // ==================== توابع کمکی ====================
     function formatPrice(price) {
         if (price === 0 || price === "0") return 'تماس بگیرید';
@@ -62,7 +73,7 @@
         if (elements.loginSection) elements.loginSection.style.display = 'none';
     }
 
-   // ==================== اخبار (از سرور) ====================
+    // ==================== اخبار (از سرور) ====================
     async function loadNews() {
         try {
             const response = await fetch('/api/news/');
@@ -146,7 +157,7 @@
 
         // اگر خبری لینک داره، از propagation جلوگیری کن (اختیاری)
         containerEl.querySelectorAll('.news-item').forEach(item => {
-            item.addEventListener('click', function(e) {
+            item.addEventListener('click', function (e) {
                 // می‌تونی اینجا tracking یا analytics اضافه کنی
                 console.log('News clicked:', this.querySelector('.news-title')?.textContent);
             });
@@ -183,11 +194,11 @@
         if (!elements.container) return;
 
         elements.container.innerHTML = servicesList.map((svc, i) => {
-            const priceDisplay = svc.price_display || formatPrice(svc.price);
+            const priceDisplay = formatPrice(svc.price);
             const description = svc.description || svc.desc || '';
-
+            const isPricePerPage = svc.is_price_per_page;
             return `
-                <div class="service-row" data-service-index="${i}">
+                <div class="service-row" id="service${i}" data-service-index="${i}">
                     <div class="row-header">
                         <div class="row-icon">${svc.icon || '📄'}</div>
                         <div class="row-info">
@@ -196,12 +207,12 @@
                         </div>
                         <div class="row-price">💲 ${priceDisplay}</div>
                     </div>
+                     ${isPricePerPage ? `<p>تعداد صفحات/اسلاید ها</p> <input type="number" min="1" max="100" value="1" data-index="${i}">` : ''}
                     <textarea class="description-input" placeholder="توضیحات سفارش خود را بنویسید..." rows="2"></textarea>
                     <button class="order-btn" data-index="${i}">📋 ثبت سفارش</button>
                 </div>
             `;
         }).join('');
-
         // attach order button events
         document.querySelectorAll('.order-btn').forEach(btn => {
             btn.removeEventListener('click', handleOrderClick);
@@ -368,10 +379,9 @@
         });
     }
 
- // ==================== مقداردهی اولیه ====================
+    // ==================== مقداردهی اولیه ====================
     function init() {
         cacheElements();
-
         console.log('عناصر یافت شده:', {
             navReg: !!elements.navReg,
             registerSection: !!elements.registerSection,
@@ -379,13 +389,11 @@
             newsSidebar: !!elements.newsListContainer,
             newsMobile: !!elements.newsMobileListContainer
         });
-
         // بارگذاری اخبار از سرور
         loadNews();  // جایگزین renderNews استاتیک
-
         // بارگذاری خدمات
         loadServices();
-
+        controlServicePrice();
         // تنظیم رویدادها
         initFormEvents();
         initGlobalEvents();
@@ -432,6 +440,7 @@
         const index = parseInt(btn.dataset.index);
         const svc = servicesList[index];
         const row = btn.closest('.service-row');
+        const pageCount = row.querySelector("input[type='number']");
         const textarea = row?.querySelector('.description-input');
         const description = textarea?.value || '';
 
@@ -445,7 +454,6 @@
 
         if (!isAuthenticated) {
             showModal('⚠️ لطفاً ابتدا وارد حساب کاربری خود شوید', '🔐');
-            showLogin();
             return;
         }
 
@@ -462,9 +470,11 @@
                     'X-CSRFToken': csrf,
                 },
                 body: JSON.stringify({
+                    id: svc.id,
                     title: svc.title,
                     description: description || svc.description || '',
-                    price: typeof svc.price === 'number' ? svc.price : 0,
+                    pageCount: pageCount && pageCount.value > 0 ? pageCount.value : 0,
+                    // price: typeof svc.price === 'number' ? svc.price : 0,
                     priority: 'medium'
                 })
             });
@@ -521,14 +531,13 @@
     }
 })();
 
-
 // کنترل نمایش پیغام ها
 
 const toastMessage = document.querySelector(".toast");
-if(toastMessage){
+if (toastMessage) {
     toastMessage.classList.add('show');
     setTimeout(() => {
         toastMessage.classList.remove('show');
         toastMessage.remove();
-    },3400);
+    }, 3400);
 }

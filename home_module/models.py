@@ -82,7 +82,7 @@ class Service(models.Model):
         default='medium',
         verbose_name='اولویت'
     )
-
+    page_count = models.PositiveIntegerField(null=True, blank=True, default=0, verbose_name='تعداد صفحات/اسلایدها')
     # مالی
     price = models.BigIntegerField(
         validators=[MinValueValidator(0)],
@@ -248,6 +248,7 @@ class HomeService(models.Model):
         verbose_name='قیمت (تومان) - ۰ یعنی تماس بگیرید',
         help_text='اگر قیمت ۰ باشد، "تماس بگیرید" نمایش داده می‌شود'
     )
+    is_price_per_page = models.BooleanField(default=False,verbose_name=' قیمت به ازای هر صفحه/اسلاید است.')
     is_active = models.BooleanField(default=True, verbose_name='فعال')
     order = models.IntegerField(default=0, verbose_name='ترتیب نمایش')
 
@@ -267,7 +268,7 @@ class HomeService(models.Model):
         """نمایش قیمت به صورت خوانا"""
         if self.price == 0:
             return 'تماس بگیرید'
-        return f'{self.price:,} تومان'
+        return self.price
 # ============================================
 # ServiceChat - مدیریت چت با JSON
 # ============================================

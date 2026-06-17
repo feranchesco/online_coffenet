@@ -18,7 +18,6 @@ urlpatterns = [
     path('api/chat/unread/', chat_views.get_unread_count, name='get_unread_count'),
     path('api/chat/list/', chat_views.get_chat_list, name='get_chat_list'),
     # API ها
-    path('api/service/create/', views.create_service, name='create_service'),
     path('api/service/<uuid:service_id>/pay/', views.pay_service, name='pay_service'),
     path('api/service/<uuid:service_id>/download/', views.download_result, name='download_result'),
     path('api/service/<uuid:service_id>/rate/', views.rate_service, name='rate_service'),

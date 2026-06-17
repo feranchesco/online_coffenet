@@ -25,7 +25,7 @@ class HomeServiceAdmin(admin.ModelAdmin):
             'fields': ('icon', 'title', 'description')
         }),
         ('قیمت‌گذاری', {
-            'fields': ('price',),
+            'fields': ('price','is_price_per_page'),
             'description': 'اگر قیمت ۰ باشد، عبارت "تماس بگیرید" نمایش داده می‌شود'
         }),
         ('تنظیمات نمایش', {
@@ -165,7 +165,7 @@ class ServiceAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('اطلاعات اصلی', {
-            'fields': ('tracking_code', 'title', 'description')
+            'fields': ('tracking_code', 'title', 'description' , 'page_count')
         }),
         ('مشتری و اپراتور', {
             'fields': ('customer', 'operator')

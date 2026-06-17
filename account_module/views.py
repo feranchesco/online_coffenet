@@ -86,6 +86,7 @@ def profile(request):
             'description': service.description or '',
             'status': service.status,
             'status_display': service.get_status_display(),
+            'page_count': service.page_count,
             'price': service.price,
             'final_price': service.final_price or service.price,
             'is_paid': service.is_paid,
