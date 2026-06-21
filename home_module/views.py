@@ -467,3 +467,10 @@ def get_chat_history(request, session_id):
 
     except ChatSession.DoesNotExist:
         return JsonResponse({'error': 'جلسه چت یافت نشد'}, status=404)
+
+
+def page_not_found(request):
+    return render(request,'shared/404_page.html')
+
+def handler404(request, exception):
+    return render(request, 'shared/404_page.html', status=404)

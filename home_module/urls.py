@@ -26,4 +26,6 @@ urlpatterns = [
     path('api/ai-chat/send/', views.ai_chat_api, name='ai_chat_api'),
     path('api/ai-chat/history/<uuid:session_id>/', views.get_chat_history, name='ai_chat_history'),
 
+    path('404/', views.page_not_found, name='404_page')
+
 ]
