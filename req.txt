@@ -1,0 +1,16 @@
+asgiref
+certifi
+charset-normalizer
+Django
+django-jalali-date
+django-render-partial
+django-widget-tweaks
+idna
+jalali_core
+jdatetime
+packaging
+pillow
+requests
+sqlparse
+urllib3
+mysql-connector-python
