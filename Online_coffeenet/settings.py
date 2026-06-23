@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-tr#1h)$w1bvkgv#-wf!n2w7g%%jb9=qdvdk9^kh#7)!1g@(yrx
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["emdadmoalem.ir","www.emdadmoalem.ir"]
 
 
 
@@ -63,8 +63,13 @@ WSGI_APPLICATION = 'Online_coffeenet.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'mysql.connector.django',
+        'NAME': 'emdadmoa_online_coffeenet',
+        'USER':'emdadmoa_online_coffeenet_user',
+        'PASSWORD':'1870663993@Dv',
+        'OPTIONS':{
+            'autocommit':True
+        }
     }
 }
 
