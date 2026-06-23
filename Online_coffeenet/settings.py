@@ -3,12 +3,14 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 SECRET_KEY = 'django-insecure-tr#1h)$w1bvkgv#-wf!n2w7g%%jb9=qdvdk9^kh#7)!1g@(yrx'
 
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['localhost',
-                 '127.0.0.1' ]
+ALLOWED_HOSTS = ["emdadmoalem.ir","www.emdadmoalem.ir"]
+
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -57,12 +59,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Online_coffeenet.wsgi.application'
 
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'mysql.connector.django',
+        'NAME': 'emdadmoa_online_coffeenet',
+        'USER':'emdadmoa_online_coffeenet_user',
+        'PASSWORD':'1870663993@Dv',
+        'OPTIONS':{
+            'autocommit':True
+        }
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -82,6 +92,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
@@ -92,6 +103,7 @@ TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
 
 USE_TZ = True
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
@@ -119,9 +131,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CHAT_JSON_DIR = os.path.join(MEDIA_ROOT, 'chats')
 
 JALALI_DATE_DEFAULTS = {
-    # if change it to true then all dates of the list_display will convert to the Jalali.
-    'LIST_DISPLAY_AUTO_CONVERT': False,
-    'Strftime': {
+   # if change it to true then all dates of the list_display will convert to the Jalali.
+   'LIST_DISPLAY_AUTO_CONVERT': False,
+   'Strftime': {
         'date': '%y/%m/%d',
         'datetime': '%H:%M:%S _ %y/%m/%d',
     },
@@ -131,7 +143,7 @@ JALALI_DATE_DEFAULTS = {
         ],
         'css': {
             'all': [
-                'admin/css/django_jalali.min.css',
+              'admin/css/django_jalali.min.css',
             ]
         }
     },
