@@ -469,6 +469,7 @@ def get_chat_history(request, session_id):
         return JsonResponse({'error': 'جلسه چت یافت نشد'}, status=404)
 
 
+
 def page_not_found(request):
     return render(request,'shared/404_page.html')
 

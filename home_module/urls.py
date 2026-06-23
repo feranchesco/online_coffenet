@@ -28,4 +28,5 @@ urlpatterns = [
 
     path('404/', views.page_not_found, name='404_page')
 
+
 ]
