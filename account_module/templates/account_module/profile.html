@@ -277,7 +277,7 @@
                     <div class="order-info">
                         <div class="order-title">${escapeHtml(service.title)}</div>
                         <div class="order-desc">${escapeHtml(service.description || '')}</div>
-                        <div class="order-desc">${service.page_count === 0 ? "" : "تعداد صفحات درخواستی: " + service.page_count}</div>
+                        <div class="order-desc">${service.page_count !== null ? "تعداد صفحات درخواستی: " + service.page_count : "" }</div>
                         <div class="order-tracking">کد پیگیری: ${service.tracking_code}</div>
                     </div>
                     <span class="order-status ${getStatusClass(service.status)}">${service.status_display}</span>

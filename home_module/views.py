@@ -63,13 +63,13 @@ def create_service(request):
         service_id = data.get('id')
         title = data.get('title', '').strip()
         description = data.get('description', '').strip()
-        page_count = int(data.get('pageCount'))
+        page_count = data.get('pageCount')
         priority = data.get('priority', 'medium')
 
         if service_id:
             home_service = HomeService.objects.filter(id=service_id , is_active=True).first()
             if home_service:
-                price = home_service.price*page_count if home_service.is_price_per_page else home_service.price
+                price = home_service.price*int(page_count) if home_service.is_price_per_page and page_count!="" else home_service.price
             else:
                 return JsonResponse({
                     'success': False,

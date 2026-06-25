@@ -39,7 +39,7 @@
         };
     }
 
-     function controlServicePrice() {
+    function controlServicePrice() {
         elements.container?.addEventListener('input', (e) => {
             if (!e.target.matches("input[type='number']")) return;
             const index = Number(e.target.dataset.index);
@@ -207,7 +207,7 @@
                         </div>
                         <div class="row-price">💲 ${priceDisplay}</div>
                     </div>
-                     ${isPricePerPage ? `<p>تعداد صفحات/اسلاید ها</p> <input type="number" min="1" max="100" value="1" data-index="${i}">` : ''}
+                     ${isPricePerPage ? `<p>تعداد صفحات/اسلاید ها</p> <input class="page-counter" type="number" min="1" max="100" value="1" data-index="${i}">` : ''}
                     <textarea class="description-input" placeholder="توضیحات سفارش خود را بنویسید..." rows="2"></textarea>
                     <button class="order-btn" data-index="${i}">📋 ثبت سفارش</button>
                 </div>
@@ -456,12 +456,18 @@
             showModal('⚠️ لطفاً ابتدا وارد حساب کاربری خود شوید', '🔐');
             return;
         }
-
+        const csrf = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        let requestedServicePage
+         if (svc.is_price_per_page && pageCount.value > 0) {
+                requestedServicePage = pageCount.value;
+            } else if (svc.is_price_per_page && pageCount.value == 0) {
+                showModal("مقدار وارد شده معتبر نیست!",'⚠️');
+                return;
+            } else {
+                requestedServicePage = null;
+            }
         // غیرفعال کردن دکمه قبل از ارسال درخواست
         disableButton(btn, '⏳ در حال ثبت...');
-
-        const csrf = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
-
         try {
             const response = await fetch('/api/service/create/', {
                 method: 'POST',
@@ -473,12 +479,10 @@
                     id: svc.id,
                     title: svc.title,
                     description: description || svc.description || '',
-                    pageCount: pageCount && pageCount.value > 0 ? pageCount.value : 0,
-                    // price: typeof svc.price === 'number' ? svc.price : 0,
+                    pageCount: requestedServicePage,
                     priority: 'medium'
                 })
             });
-
             const data = await response.json();
 
             if (data.success) {

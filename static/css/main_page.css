@@ -1053,4 +1053,38 @@ body::before {
     );
 }
 
+.page-counter {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(16px);
+    color: #fff;
+    border-radius: 16px;
+    padding: 1rem;
+}
 
+.page-counter:focus {
+    border-color: #6366f1;
+    box-shadow:
+        0 0 20px rgba(99, 102, 241, 0.35),
+        0 0 40px rgba(236, 72, 153, 0.15);
+}
+
+.page-counter::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.page-counter:hover {
+    border-color: rgba(99, 102, 241, 0.6);
+}
+
+/* حذف فلش‌های پیش‌فرض در Chrome و Edge */
+.page-counter::-webkit-inner-spin-button,
+.page-counter::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* حذف فلش‌های پیش‌فرض در Firefox */
+.page-counter {
+    -moz-appearance: textfield;
+}
