@@ -540,24 +540,3 @@ if (toastMessage) {
         toastMessage.remove();
     }, 3400);
 }
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    // حذف کلاس page-leaving در صورت وجود از کش
-    document.body.classList.remove("page-leaving");
-    document.querySelectorAll("a").forEach(link => {
-        if (link.hostname === location.hostname &&
-            !link.hasAttribute("target") &&
-            !link.hasAttribute("download") &&
-            link.getAttribute("href") !== "#") {
-            link.addEventListener("click", e => {
-                e.preventDefault();
-                const href = link.href;
-                document.body.classList.add("page-leaving");
-                setTimeout(() => {
-                    window.location.href = href;
-                }, 180);
-            });
-        }
-    });
-});
