@@ -1,16 +1,14 @@
 /* ----- هدر ادمین ----- */
-.admin-header {
-    background: rgba(22, 25, 42, 0.55);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 2.5rem;
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.6);
-    flex-wrap: wrap;
+.admin-header{
+    background:rgba(22,25,42,.9);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:2.5rem;
+    padding:1.5rem;
+    display:flex;
+    align-items:center;
+    gap:1.2rem;
+    flex-wrap:wrap;
+    box-shadow:0 6px 16px rgba(0,0,0,.25);
 }
 
 .admin-avatar {
@@ -23,7 +21,7 @@
     justify-content: center;
     font-size: 2.5rem;
     border: 3px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+    box-shadow:0 4px 10px rgba(239,68,68,.25);
 }
 
 .admin-info {
@@ -84,15 +82,13 @@
     gap: 0.8rem;
 }
 
-.stat-card {
-    background: rgba(22, 25, 42, 0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 1.8rem;
-    padding: 1.2rem;
-    text-align: center;
-    box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.4);
+.stat-card{
+    background:rgba(22,25,42,.9);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:1.8rem;
+    padding:1.2rem;
+    text-align:center;
+    box-shadow:0 4px 10px rgba(0,0,0,.2);
 }
 
 .stat-card.highlight {
@@ -111,23 +107,24 @@
 }
 
 /* ----- کارت پروژه ----- */
-.project-card {
-    background: rgba(22, 25, 42, 0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 2.5rem;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.55);
-    transition: all 0.3s ease;
-    margin-bottom: 1rem;
+.project-card{
+    background:rgba(22,25,42,.9);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:2.5rem;
+    padding:1.5rem;
+    display:flex;
+    flex-direction:column;
+    gap:.9rem;
+    margin-bottom:1rem;
+    box-shadow:0 6px 16px rgba(0,0,0,.25);
+    transition:
+        background-color .25s,
+        border-color .25s;
 }
 
-.project-card:hover {
-    border-color: rgba(255, 255, 255, 0.35);
+.project-card:hover{
+    border-color:rgba(255,255,255,.25);
+    background:rgba(30,34,55,.95);
 }
 
 .project-header {
@@ -204,20 +201,24 @@
 }
 
 /* ----- کارت اپراتور (لیست حقوق) ----- */
-.operator-salary-card {
-    background: rgba(22, 25, 42, 0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 2.5rem;
-    padding: 1.3rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
-    margin-bottom: 0.8rem;
-    flex-wrap: wrap;
-    transition: 0.3s;
+.operator-salary-card{
+    background:rgba(22,25,42,.9);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:2.5rem;
+    padding:1.3rem;
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    margin-bottom:.8rem;
+    flex-wrap:wrap;
+    box-shadow:0 5px 14px rgba(0,0,0,.25);
+    transition:
+        background-color .25s,
+        border-color .25s;
+}
+
+.operator-salary-card:hover{
+    border-color:rgba(255,255,255,.25);
 }
 
 .operator-salary-card.owner {
@@ -225,9 +226,6 @@
     background: rgba(251, 191, 36, 0.06);
 }
 
-.operator-salary-card:hover {
-    border-color: rgba(255, 255, 255, 0.35);
-}
 
 .op-avatar {
     width: 50px;
@@ -285,14 +283,12 @@
 }
 
 /* ----- بخش درآمد کل ----- */
-.revenue-section {
-    background: rgba(22, 25, 42, 0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    border-radius: 2.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.6);
+.revenue-section{
+    background:rgba(22,25,42,.9);
+    border:1px solid rgba(251,191,36,.3);
+    border-radius:2.5rem;
+    padding:1.5rem;
+    box-shadow:0 6px 16px rgba(0,0,0,.25);
 }
 
 .revenue-title {
@@ -364,15 +360,15 @@
     }
 }
 /* ========== کارت‌های خبر در ادمین ========== */
-.news-admin-card {
-    background: rgba(22, 25, 42, 0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 2rem;
-    padding: 1.3rem;
-    margin-bottom: 0.8rem;
-    transition: all 0.3s ease;
+.news-admin-card{
+    background:rgba(22,25,42,.9);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:2rem;
+    padding:1.3rem;
+    margin-bottom:.8rem;
+    transition:
+        background-color .25s,
+        border-color .25s;
 }
 
 .news-admin-card.pinned {
@@ -448,15 +444,15 @@
 }
 
 /* ========== کارت‌های خدمات در ادمین ========== */
-.service-admin-card {
-    background: rgba(22, 25, 42, 0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 2rem;
-    padding: 1.3rem;
-    margin-bottom: 0.8rem;
-    transition: all 0.3s ease;
+.service-admin-card{
+    background:rgba(22,25,42,.9);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:2rem;
+    padding:1.3rem;
+    margin-bottom:.8rem;
+    transition:
+        background-color .25s,
+        border-color .25s;
 }
 
 .service-admin-card.inactive {
@@ -512,7 +508,9 @@
     font-size: 0.75rem;
     cursor: pointer;
     font-weight: 600;
-    transition: all 0.2s;
+    transition:
+        background-color .2s,
+        transform .2s;
 }
 
 .action-btn.edit {
@@ -532,8 +530,8 @@
 }
 
 .action-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transform:translateY(-2px);
+    box-shadow:0 3px 8px rgba(0,0,0,.2);
 }
 
 .add-new-btn {
@@ -546,13 +544,16 @@
     cursor: pointer;
     font-weight: 600;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.25s;
+    transition:
+        transform .2s,
+        box-shadow .2s,
+        background-color .2s;
 }
 
 .add-new-btn:hover {
     background: #7c3aed;
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
-    transform: translateY(-2px);
+    box-shadow:0 4px 10px rgba(99,102,241,.25);
+    transform:translateY(-2px);
 }
 
 .empty-state {
@@ -579,30 +580,31 @@
     margin: 1rem 0;
 }
 
-.tab-btn-simple {
-    background: rgba(22, 25, 42, 0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: #cfc8ff;
-    padding: 0.7rem 1.5rem;
-    border-radius: 2rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    white-space: nowrap;
+.tab-btn-simple{
+    background:rgba(22,25,42,.9);
+    border:1px solid rgba(255,255,255,.12);
+    color:#cfc8ff;
+    padding:.7rem 1.5rem;
+    border-radius:2rem;
+    font-size:.85rem;
+    cursor:pointer;
+    font-weight:600;
+    transition:
+        background-color .25s,
+        color .25s,
+        border-color .25s;
+    white-space:nowrap;
+}
+
+.tab-btn-simple.active{
+    background:#6366f1;
+    color:#fff;
+    border-color:rgba(255,255,255,.2);
+    box-shadow:0 3px 8px rgba(99,102,241,.25);
 }
 
 .tab-btn-simple:hover {
     background: rgba(99, 102, 241, 0.2);
     border-color: rgba(99, 102, 241, 0.4);
     color: white;
-}
-
-.tab-btn-simple.active {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
 }

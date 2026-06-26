@@ -1,4 +1,20 @@
 <link rel="stylesheet" href="/static/css/main_page.css">
 <link rel="stylesheet" href="/static/css/common.css">
-<link rel="prefetch" href="{% url 'profile' %}">
-<link rel="prefetch" href="{% url 'home' %}">
+
+{% if not request.user.is_authenticated and not request.session.operator_id %}
+	<link rel="prefetch" href="{% url 'operator_login' %}">
+	<link rel="prefetch" href="{% url 'customer_login' %}">
+	<link rel="prefetch" href="{% url 'customer_signup' %}">
+{% endif %}
+
+{% if request.user.is_authenticated  %}
+    <link rel="prefetch" href="{% url 'profile' %}">
+{% endif %} 
+
+{% if request.session.operator_id %}
+    <link rel="prefetch" href="{% url 'operator_panel' %}">
+{% endif %} 
+
+{% if request.resolver_match.url_name != 'home' %}
+    <link rel="prefetch" href="{% url 'home' %}">
+{% endif %}
