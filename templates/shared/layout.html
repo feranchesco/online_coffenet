@@ -42,7 +42,7 @@
             <span>پنل کاربری</span>
         </a>
         {% if request.user.is_superuser %}
-            <a href="admin/" class="nav-item"><span>📊</span><span>پنل جنگو</span></a>
+            <a href="/admin" class="nav-item"><span>📊</span><span>پنل جنگو</span></a>
             <a href="{% url 'admin_dashboard' %}" class="nav-item"><span>👑</span><span>پنل مدیریت</span></a>
         {% endif %}
         <a href="{% url 'logout' %}" class="nav-item"><span>🚪</span><span>خروج</span></a>

@@ -32,8 +32,7 @@
             fullNameInput: document.getElementById('fullNameInput'),
             phoneInput: document.getElementById('phoneInput'),
             navPan: document.getElementById('navPan'),
-            floatingNewsBtn: document.getElementById('floatingNewsBtn'),
-            // دکمه‌های جدید
+            floatingNewsBtn: document.getElementById('floatingNewsBtn'), // دکمه‌های جدید
             navReg: document.getElementById('navReg'),
             profileBtn: document.getElementById('profileBtn')
         };
@@ -100,26 +99,16 @@
         } catch (error) {
             console.error('Error loading news:', error);
             // در صورت خطا، نمایش خبرهای fallback
-            const fallbackNews = [
-                {
-                    title: 'تخفیف ویژه چاپ و پرینت تا پایان هفته',
-                    date: 'امروز',
-                    icon: '📰',
-                    summary: 'تخفیف ویژه خدمات چاپ'
-                },
-                {
-                    title: 'خدمات جدید تایپ و ترجمه در کافی‌نت',
-                    date: '۲ روز پیش',
-                    icon: '📰',
-                    summary: 'خدمات تایپ و ترجمه'
-                },
-                {
-                    title: 'خطا در بارگذاری اخبار',
-                    date: 'لطفاً صفحه را refresh کنید',
-                    icon: '⚠️',
-                    summary: 'خطا در ارتباط با سرور'
-                }
-            ];
+            const fallbackNews = [{
+                title: 'تخفیف ویژه چاپ و پرینت تا پایان هفته', date: 'امروز', icon: '📰', summary: 'تخفیف ویژه خدمات چاپ'
+            }, {
+                title: 'خدمات جدید تایپ و ترجمه در کافی‌نت', date: '۲ روز پیش', icon: '📰', summary: 'خدمات تایپ و ترجمه'
+            }, {
+                title: 'خطا در بارگذاری اخبار',
+                date: 'لطفاً صفحه را refresh کنید',
+                icon: '⚠️',
+                summary: 'خطا در ارتباط با سرور'
+            }];
             renderNews(elements.newsListContainer, fallbackNews);
             renderNews(elements.newsMobileListContainer, fallbackNews);
         }
@@ -177,15 +166,27 @@
         } catch (error) {
             console.error('Error loading services:', error);
             // Fallback: خدمات پیش‌فرض
-            servicesList = [
-                {icon: "🖨️", title: "پرینت و اسکن", description: "پرینت رنگی، اسکن مدارک", price: 5000},
-                {icon: "🏛️", title: "خدمات دولتی", description: "استعلام و ثبت نام", price: 15000},
-                {icon: "🌐", title: "ثبت نام اینترنتی", description: "کنکور، مهاجرت", price: 20000},
-                {icon: "🎓", title: "خدمات دانشجویی", description: "پایان‌نامه، جزوه", price: 10000},
-                {icon: "✍️", title: "تایپ و طراحی", description: "رزومه، تایپ فارسی", price: 8000},
-                {icon: "📦", title: "پیگیری سفارشات", description: "رهگیری مرسوله", price: 3000},
-                {icon: "⚙️", title: "خدمات سفارشی", description: "سفارش خاص شما", price: 0}
-            ];
+            servicesList = [{
+                icon: "🖨️",
+                title: "پرینت و اسکن",
+                description: "پرینت رنگی، اسکن مدارک",
+                price: 5000
+            }, {icon: "🏛️", title: "خدمات دولتی", description: "استعلام و ثبت نام", price: 15000}, {
+                icon: "🌐",
+                title: "ثبت نام اینترنتی",
+                description: "کنکور، مهاجرت",
+                price: 20000
+            }, {icon: "🎓", title: "خدمات دانشجویی", description: "پایان‌نامه، جزوه", price: 10000}, {
+                icon: "✍️",
+                title: "تایپ و طراحی",
+                description: "رزومه، تایپ فارسی",
+                price: 8000
+            }, {icon: "📦", title: "پیگیری سفارشات", description: "رهگیری مرسوله", price: 3000}, {
+                icon: "⚙️",
+                title: "خدمات سفارشی",
+                description: "سفارش خاص شما",
+                price: 0
+            }];
             renderServices();
         }
     }
@@ -241,12 +242,9 @@
 
         try {
             const response = await fetch('/api/service/create/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrf,
-                },
-                body: JSON.stringify({
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json', 'X-CSRFToken': csrf,
+                }, body: JSON.stringify({
                     title: svc.title,
                     description: description || svc.description || '',
                     price: typeof svc.price === 'number' ? svc.price : 0,
@@ -458,24 +456,21 @@
         }
         const csrf = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
         let requestedServicePage
-         if (svc.is_price_per_page && pageCount.value > 0) {
-                requestedServicePage = pageCount.value;
-            } else if (svc.is_price_per_page && pageCount.value == 0) {
-                showModal("مقدار وارد شده معتبر نیست!",'⚠️');
-                return;
-            } else {
-                requestedServicePage = null;
-            }
+        if (svc.is_price_per_page && pageCount.value > 0) {
+            requestedServicePage = pageCount.value;
+        } else if (svc.is_price_per_page && pageCount.value == 0) {
+            showModal("مقدار وارد شده معتبر نیست!", '⚠️');
+            return;
+        } else {
+            requestedServicePage = null;
+        }
         // غیرفعال کردن دکمه قبل از ارسال درخواست
         disableButton(btn, '⏳ در حال ثبت...');
         try {
             const response = await fetch('/api/service/create/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrf,
-                },
-                body: JSON.stringify({
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json', 'X-CSRFToken': csrf,
+                }, body: JSON.stringify({
                     id: svc.id,
                     title: svc.title,
                     description: description || svc.description || '',
@@ -545,3 +540,24 @@ if (toastMessage) {
         toastMessage.remove();
     }, 3400);
 }
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    // حذف کلاس page-leaving در صورت وجود از کش
+    document.body.classList.remove("page-leaving");
+    document.querySelectorAll("a").forEach(link => {
+        if (link.hostname === location.hostname &&
+            !link.hasAttribute("target") &&
+            !link.hasAttribute("download") &&
+            link.getAttribute("href") !== "#") {
+            link.addEventListener("click", e => {
+                e.preventDefault();
+                const href = link.href;
+                document.body.classList.add("page-leaving");
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 180);
+            });
+        }
+    });
+});
