@@ -317,32 +317,20 @@
 }
 
 
-::view-transition-old(page-content),
-::view-transition-new(page-content) {
-  /* به مرورگر می‌گیم از قبل GPU layer جدا بساز، نه وسط انیمیشن */
-  will-change: opacity, transform;
-  backface-visibility: hidden;
-}
-
 ::view-transition-old(page-content) {
-  animation: 200ms ease-out both pc-fade-out;
+  animation: 220ms ease-out both pc-fade-out;
 }
 
 ::view-transition-new(page-content) {
-  animation: 200ms ease-in both pc-fade-in;
+  animation: 220ms ease-in both pc-fade-in;
 }
 
 @keyframes pc-fade-out {
-  from { opacity: 1; transform: translate3d(0, 0, 0); }
-  to   { opacity: 0; transform: translate3d(0, 6px, 0); }
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(8px); }
 }
 
 @keyframes pc-fade-in {
-  from { opacity: 0; transform: translate3d(0, -6px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-
-/* محدود کردن دامنه‌ی repaint به همون المان، نه کل صفحه */
-#page-content {
-  contain: layout paint;
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
