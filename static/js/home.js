@@ -152,17 +152,43 @@
             });
         });
     }
+    function renderSkeletons(count = 6) {
+        if (!elements.container) return;
 
+        elements.container.innerHTML = Array.from({length: count}, () => `
+        <div class="service-row skeleton">
+            <div class="row-header">
+                <div class="row-icon skeleton-box"></div>
+
+                <div class="row-info">
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line desc"></div>
+                </div>
+
+                <div class="skeleton-price"></div>
+            </div>
+
+            <div class="skeleton-textarea"></div>
+
+            <div class="skeleton-button"></div>
+        </div>
+    `).join('');
+    }
     // ==================== خدمات (از سرور) ====================
     let servicesList = [];
 
     async function loadServices() {
+        setTimeout(()=>{
+            renderSkeletons();
+        },450);
         try {
             const response = await fetch('/api/home-services/');
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             servicesList = data.services || [];
-            renderServices();
+            setTimeout(()=>{
+                renderServices();
+            },900);
         } catch (error) {
             console.error('Error loading services:', error);
             // Fallback: خدمات پیش‌فرض
