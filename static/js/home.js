@@ -232,11 +232,24 @@
                             <div class="row-title">${svc.title || 'بدون عنوان'}</div>
                             <div class="row-desc">${description}</div>
                         </div>
-                        <div class="row-price">💲 ${priceDisplay}</div>
+                        <div class="row-price">${priceDisplay}</div>
                     </div>
-                     ${isPricePerPage ? `<p>تعداد صفحات/اسلاید ها</p> <input class="page-counter" type="number" min="1" max="100" value="1" data-index="${i}">` : ''}
+                    ${isPricePerPage ? `
+                    <div class="row-divider"></div>
+                    <div class="page-control">
+                        <span class="page-control-label">تعداد صفحات/اسلایدها</span>
+                        <div class="page-stepper">
+                            <button type="button" class="step-btn step-dec" data-action="dec" data-index="${i}">−</button>
+                            <input class="page-counter" type="number" min="1" max="100" value="1" data-index="${i}">
+                            <button type="button" class="step-btn step-inc" data-action="inc" data-index="${i}">+</button>
+                        </div>
+                    </div>` : ''}
+                    <div class="row-divider"></div>
                     <textarea class="description-input" placeholder="توضیحات سفارش خود را بنویسید..." rows="2"></textarea>
-                    <button class="order-btn" data-index="${i}">📋 ثبت سفارش</button>
+                    <button class="order-btn" data-index="${i}">
+                        <span class="order-btn-icon">📋</span>
+                        ثبت سفارش
+                    </button>
                 </div>
             `;
         }).join('');

@@ -363,125 +363,159 @@ body::before {
 .service-row{
     display:flex;
     flex-direction:column;
-    gap:.9rem;
+    gap:1rem;
     padding:1.25rem;
     background:rgba(22,25,42,.82);
     border:1px solid rgba(255,255,255,.12);
-    border-radius:2rem;
+    border-radius:1.25rem;
     box-shadow:0 8px 20px rgba(0,0,0,.28);
-    transition:
-        background-color .25s,
-        border-color .25s,
-        transform .25s;
+    transition:background-color .25s, border-color .25s, transform .25s;
     contain:layout paint;
 }
-
 .service-row:hover{
-    background:rgba(28,32,52,.92);
-    border-color:rgba(255,255,255,.18);
-    transform:translateY(-2px);
+    border-color:rgba(99,102,241,.45);
 }
 
-.row-header {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    flex-wrap: wrap;
+.row-header{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    align-items:center;
+    gap:.85rem;
 }
 
 .row-icon{
-    width:55px;
-    height:55px;
+    width:42px;
+    height:42px;
+    flex-shrink:0;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:2.3rem;
-    border-radius:50%;
-    background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.12);
+    font-size:1.2rem;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:.85rem;
 }
 
-.row-info {
-    flex: 1;
-    min-width: 150px;
+
+.row-info{
+    min-width:0;
 }
 
-.row-title {
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: #f3efff;
+.row-title{
+    font-size:.95rem;
+    font-weight:600;
+    color:#fff;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
-.row-desc {
-    font-size: 0.8rem;
-    color: #b9c2e6;
-    margin-top: 0.1rem;
+.row-desc{
+    font-size:.78rem;
+    color:rgba(255,255,255,.5);
+    margin-top:.15rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 .row-price{
-    display:flex;
-    align-items:center;
-    gap:.35rem;
-    padding:.45rem .95rem;
-    border-radius:999px;
-    background:rgba(74,222,128,.10);
-    border:1px solid rgba(74,222,128,.22);
-    color:#4ade80;
+    font-size:.85rem;
     font-weight:700;
+    color:#4ade80;
+    background:rgba(34,197,94,.12);
+    border:1px solid rgba(34,197,94,.3);
+    padding:.3rem .7rem;
+    border-radius:.7rem;
     white-space:nowrap;
 }
-
-.description-input{
-    width:100%;
-    min-height:55px;
-    resize:vertical;
-    padding:.85rem 1rem;
-    border-radius:1.5rem;
-    background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.15);
+/* جداکننده */
+.row-divider{
+    height:1px;
+    background:rgba(255,255,255,.08);
+}
+.page-control{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:.75rem;
+}
+.page-control-label{
+    font-size:.82rem;
+    color:rgba(255,255,255,.65);
+}
+.page-stepper{
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+}
+.step-btn{
+    width:30px;
+    height:30px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.05);
     color:#fff;
-    outline:none;
-    transition:
-        border-color .2s,
-        box-shadow .2s;
-    font-family:inherit;
+    border-radius:.6rem;
+    font-size:1rem;
+    line-height:1;
+    cursor:pointer;
+    transition:border-color .2s, background-color .2s;
+}
+.step-btn.step-inc:hover{
+    border-color:rgba(34,197,94,.5);
+    background:rgba(34,197,94,.12);
+    color:#4ade80;
 }
 
-.description-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+.step-btn.step-dec:hover{
+    border-color:rgba(239,68,68,.5);
+    background:rgba(239,68,68,.12);
+    color:#f87171;
+}
+.description-input{
+    width:100%;
+    resize:vertical;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:.85rem;
+    color:#fff;
+    padding:.65rem .8rem;
+    font-size:.85rem;
+    font-family:inherit;
+    transition:border-color .2s, box-shadow .2s;
+}
+
+.description-input::placeholder{
+    color:rgba(255,255,255,.45);
 }
 
 .description-input:focus{
-    border-color:#a855f7;
-    box-shadow:0 0 8px rgba(168,85,247,.25);
+    border-color:#6366f1;
+    box-shadow:0 0 8px rgba(99,102,241,.25);
+    outline:none;
 }
 
 .order-btn{
-    align-self:flex-end;
-    padding:.7rem 2rem;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+    padding:.7rem 1rem;
+    background:#6366f1;
     border:none;
-    border-radius:999px;
-    background:
-        linear-gradient(
-            135deg,
-            #6366f1,
-            #8b5cf6
-        );
+    border-radius:.85rem;
     color:#fff;
-    font-size:.85rem;
+    font-size:.88rem;
     font-weight:600;
     cursor:pointer;
-    letter-spacing:.2px;
-    transition:
-        transform .2s,
-        box-shadow .2s,
-        background-color .2s;
-    box-shadow:0 6px 16px rgba(99,102,241,.25);
+    transition:background-color .2s, transform .15s;
 }
-
 .order-btn:hover{
-    transform:translateY(-1px);
-    box-shadow:0 10px 18px rgba(99,102,241,.32);
+    background:#5457e0;
+}
+.order-btn:active{
+    transform:scale(.98);
 }
 
 /* دکمه پروفایل */
@@ -511,45 +545,71 @@ body::before {
 
 /* نوار پایین */
 .bottom-nav{
-    position:fixed;
-    bottom:18px;
-    left:50%;
-    transform:translateX(-50%);
-    width:calc(100% - 2rem);
-    max-width:580px;
-    display:flex;
-    justify-content:space-evenly;
-    min-height: 56px;
-    padding:.7rem .9rem;
-    background:rgba(18,20,35,.92);
-    border:1px solid rgba(255,255,255,.10);
-    border-radius:3rem;
-    box-shadow:0 10px 24px rgba(0,0,0,.35);
-    z-index:100;
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: calc(100% - 2rem);
+    max-width: 580px;
+
+    display: flex;
+    align-items: center;
+
+    min-height: 72px;
+    padding: .6rem .8rem;
+
+    background: rgba(18,20,35,.92);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 3rem;
+    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+    z-index: 100;
+
+    box-sizing: border-box;
 }
 
 .nav-item{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    min-width:55px;
-    padding:.45rem;
-    border-radius:1.5rem;
-    color:#cfc8ff;
-    text-decoration:none;
-    transition:
-        color .2s,
-        background-color .2s;
+    flex: 1;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    padding: .35rem .2rem;
+
+    border-radius: 1.5rem;
+
+    color: #cfc8ff;
+    text-decoration: none;
+
+    transition: color .2s, background-color .2s;
 }
 
-.nav-item span:first-child {
-    font-size: 1.5rem;
+.nav-item span:first-child{
+    font-size: 1.45rem;
+    line-height: 1;
+}
+
+.nav-item span:last-child{
+    display: block;
+
+    font-size:0.72rem;
+    line-height:normal;
+    padding-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    text-align: center;
 }
 
 .nav-item:hover{
-    background:rgba(255,255,255,.08);
-    color:#fff;
+    background: rgba(255,255,255,.08);
+    color: #fff;
 }
 
 /* Modal عمومی */
@@ -1058,23 +1118,25 @@ body::before {
 }
 
 .page-counter{
+    width:54px;
+    height:30px;
+    text-align:center;
     background:rgba(255,255,255,.05);
     border:1px solid rgba(255,255,255,.12);
-    border-radius:14px;
+    border-radius:.6rem;
     color:#fff;
-    transition:
-        border-color .2s,
-        box-shadow .2s;
+    font-size:.85rem;
+    transition:border-color .2s, box-shadow .2s;
 }
 
 .page-counter:focus{
     border-color:#6366f1;
-    box-shadow:
-        0 0 8px rgba(99,102,241,.25);
+    box-shadow:0 0 8px rgba(99,102,241,.25);
+    outline:none;
 }
 
-.page-counter::placeholder {
-    color: rgba(255, 255, 255, 0.45);
+.page-counter::placeholder{
+    color:rgba(255,255,255,.45);
 }
 
 .page-counter:hover {
@@ -1083,14 +1145,12 @@ body::before {
 
 /* حذف فلش‌های پیش‌فرض در Chrome و Edge */
 .page-counter::-webkit-inner-spin-button,
-.page-counter::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.page-counter::-webkit-outer-spin-button{
+    -webkit-appearance:none;
+    margin:0;
 }
-
-/* حذف فلش‌های پیش‌فرض در Firefox */
-.page-counter {
-    -moz-appearance: textfield;
+.page-counter{
+    -moz-appearance:textfield;
 }
 
 
