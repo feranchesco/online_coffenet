@@ -51,7 +51,6 @@
 
         <!-- محتوای تب‌ها -->
         <div id="tabContent">
-            <div class="chat-loading">⏳ در حال بارگذاری...</div>
         </div>
     </div>
 
@@ -72,7 +71,6 @@
         // ============================================
         const SERVICES_JSON = '{{ services|escapejs }}';
         let servicesData = [];
-
         try {
             servicesData = JSON.parse(SERVICES_JSON);
             console.log('📊 خدمات بارگذاری شد:', servicesData.length, 'مورد');
@@ -80,7 +78,9 @@
             console.error('خطا در بارگذاری خدمات:', e);
             servicesData = [];
         }
-
+        const activeServices = servicesData.filter(s =>
+                ['pending', 'accepted', 'in_progress'].includes(s.status)
+            );
         const csrfToken = '{{ csrf_token }}';
         const customerId = '{{ customer.id }}';
         let currentTab = 'active';
@@ -139,6 +139,9 @@
             if (diff < 3600000) return Math.floor(diff / 60000) + ' دقیقه پیش';
             if (diff < 86400000) return Math.floor(diff / 3600000) + ' ساعت پیش';
             return date.toLocaleDateString('fa-IR', {month: 'long', day: 'numeric'});
+        }
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
 
         // ============================================
@@ -232,11 +235,46 @@
         // ============================================
         // رندر تب‌ها
         // ============================================
+        function renderActiveOrdersSkeleton(count = 1) {
+            const tabContent = document.getElementById('tabContent');
+            if (!tabContent) return;
+        
+            tabContent.innerHTML = Array.from({ length: count }, () => `
+                <div class="order-card">
+        
+                    <div class="order-header">
+                        <div class="order-icon skeleton-box"></div>
+        
+                        <div class="order-info">
+                            <div class="skeleton-line title"></div>
+                            <div class="skeleton-line desc"></div>
+                            <div class="skeleton-line desc short"></div>
+                            <div class="skeleton-line tracking"></div>
+                        </div>
+        
+                        <div class="skeleton-status"></div>
+                    </div>
+        
+                    <div class="operator-info">
+                        <div class="operator-avatar skeleton-box"></div>
+        
+                        <div>
+                            <div class="skeleton-line operator-name"></div>
+                            <div class="skeleton-line operator-role"></div>
+                        </div>
+                    </div>
+        
+                    <div class="order-actions">
+                        <div class="skeleton-price"></div>
+                        <div class="skeleton-pay-btn"></div>
+                        <div class="skeleton-pay-btn"></div>
+                        <div class="skeleton-download-btn"></div>
+                    </div>
+        
+                </div>
+            `).join('');
+        }
         async function renderActiveOrders() {
-            const activeServices = servicesData.filter(s =>
-                ['pending', 'accepted', 'in_progress'].includes(s.status)
-            );
-
             // بروزرسانی badge
             const badge = document.getElementById('activeBadge');
             if (badge) {
@@ -256,9 +294,7 @@
         `;
                 return;
             }
-
             let html = '';
-
             for (const service of activeServices) {
                 let chatData = {messages: []};
                 if (service.status !== 'pending') {
@@ -329,7 +365,6 @@
             }
 
             tabContent.innerHTML = html;
-
             // اسکرول چت‌ها
             setTimeout(() => {
                 document.querySelectorAll('.chat-section').forEach(el => {
@@ -424,13 +459,9 @@
 
         function switchTab(tab) {
             currentTab = tab;
-
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             const activeBtn = document.querySelector(`[onclick="switchTab('${tab}')"]`);
             if (activeBtn) activeBtn.classList.add('active');
-
-            document.getElementById('tabContent').innerHTML = '<div class="chat-loading">⏳ در حال بارگذاری...</div>';
-
             if (tab === 'active') renderActiveOrders();
             else if (tab === 'completed') renderCompletedOrders();
             else if (tab === 'history') renderHistory();
@@ -505,10 +536,14 @@
                     badge.style.display = 'block';
                 }
             }
-
-            // رندر تب فعال
-            renderActiveOrders();
-
+            if (activeServices.length !== 0){
+                setTimeout(renderActiveOrdersSkeleton,450);
+                setTimeout(renderActiveOrders,800);
+            }else{
+                
+                renderActiveOrders();
+            }
+    
             // رفرش خودکار چت هر ۱۵ ثانیه
             setInterval(() => {
                 if (currentTab === 'active') {
