@@ -7,14 +7,6 @@
 	<link rel="prefetch" href="{% url 'customer_signup' %}">
 {% endif %}
 
-{% if request.user.is_authenticated  %}
-    <link rel="prefetch" href="{% url 'profile' %}">
-{% endif %} 
-
-{% if request.session.operator_id %}
-    <link rel="prefetch" href="{% url 'operator_panel' %}">
-{% endif %} 
-
 {% if request.resolver_match.url_name != 'home' %}
     <link rel="prefetch" href="{% url 'home' %}">
 {% endif %}

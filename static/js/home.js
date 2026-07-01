@@ -38,15 +38,41 @@
         };
     }
 
-    function controlServicePrice() {
+    function updatePrice(index) {
+        const input = document.querySelector(`input[data-index="${index}"]`);
+        const count = Number(input.value);
+
+        const totalPrice = count * servicesList[index].price;
+
+        const service = document.getElementById(`service${index}`);
+        service.querySelector('.row-price').textContent =
+            `💲 ${totalPrice.toLocaleString('fa-IR')} تومان`;
+    }
+
+    function pageCounterInput() {
         elements.container?.addEventListener('input', (e) => {
             if (!e.target.matches("input[type='number']")) return;
-            const index = Number(e.target.dataset.index);
-            const count = Number(e.target.value);
-
-            const totalPrice = count * servicesList[index].price
-            const service = document.getElementById(`service${index}`)
-            service.querySelector('.row-price').textContent = `💲 ${totalPrice.toLocaleString('fa-IR')} تومان `;
+            updatePrice(e.target.dataset.index);
+        })
+    }
+    function pageCounterButtons() {
+        let plusButtons = document.querySelectorAll(".step-inc");
+        let minusButtons = document.querySelectorAll(".step-dec");
+        plusButtons.forEach(btn => {
+            let serviceIndex = Number(btn.dataset.index);
+            let serviceInput = document.querySelector(`input[data-index="${serviceIndex}"]`)
+            btn.addEventListener('click', () => {
+                serviceInput.value = Number(serviceInput.value) + 1;
+                updatePrice(serviceIndex);
+            })
+        })
+        minusButtons.forEach(btn => {
+            let serviceIndex = Number(btn.dataset.index);
+            let serviceInput = document.querySelector(`input[data-index="${serviceIndex}"]`)
+            btn.addEventListener('click', () => {
+                serviceInput.value = Number(serviceInput.value) - 1;
+                updatePrice(serviceIndex);
+            })
         })
     }
 
@@ -152,7 +178,8 @@
             });
         });
     }
-    function renderSkeletons(count = 6) {
+
+    function renderSkeletons(count = 2) {
         if (!elements.container) return;
 
         elements.container.innerHTML = Array.from({length: count}, () => `
@@ -174,21 +201,22 @@
         </div>
     `).join('');
     }
+
     // ==================== خدمات (از سرور) ====================
     let servicesList = [];
 
     async function loadServices() {
-        setTimeout(()=>{
+        setTimeout(() => {
             renderSkeletons();
-        },450);
+        }, 450);
         try {
             const response = await fetch('/api/home-services/');
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             servicesList = data.services || [];
-            setTimeout(()=>{
+            setTimeout(() => {
                 renderServices();
-            },900);
+            }, 900);
         } catch (error) {
             console.error('Error loading services:', error);
             // Fallback: خدمات پیش‌فرض
@@ -258,6 +286,8 @@
             btn.removeEventListener('click', handleOrderClick);
             btn.addEventListener('click', handleOrderClick);
         });
+        pageCounterButtons();
+        pageCounterInput();
     }
 
     async function handleOrderClick(event) {
@@ -430,7 +460,6 @@
         loadNews();  // جایگزین renderNews استاتیک
         // بارگذاری خدمات
         loadServices();
-        controlServicePrice();
         // تنظیم رویدادها
         initFormEvents();
         initGlobalEvents();
