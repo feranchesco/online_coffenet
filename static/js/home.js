@@ -55,6 +55,7 @@
             updatePrice(e.target.dataset.index);
         })
     }
+
     function pageCounterButtons() {
         let plusButtons = document.querySelectorAll(".step-inc");
         let minusButtons = document.querySelectorAll(".step-dec");
@@ -608,3 +609,16 @@ if (toastMessage) {
         toastMessage.remove();
     }, 3400);
 }
+
+// جلوگیری از اسلاید در صفحه ی هم آدرس
+document.querySelectorAll(".bottom-nav a").forEach(link => {
+        link.addEventListener("click", function (e) {
+            const current = window.location.pathname + window.location.search;
+            const url = new URL(this.href);
+            const target = url.pathname + url.search;
+            if (current === target) {
+                e.preventDefault();
+                window.location.reload();
+            }
+        });
+    });
